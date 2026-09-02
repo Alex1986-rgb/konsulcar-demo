@@ -84,7 +84,7 @@ p{margin:0 0 1em}
 .sec{padding:clamp(52px,5.6vw,88px) 0;position:relative;isolation:isolate}
 .sec--tight{padding:clamp(34px,3.6vw,56px) 0}
 /* тонкая золотая линия между секциями — задаёт ритм вместо однотонного полотна */
-.sec+.sec::before{content:"";position:absolute;top:0;left:50%;transform:translateX(-50%);
+.sec+.sec:not(.sec--photo)::before{content:"";position:absolute;top:0;left:50%;transform:translateX(-50%);
   width:min(var(--w),calc(100% - 2*var(--gut)));height:1px;
   background:linear-gradient(90deg,transparent,var(--line) 22%,var(--line) 78%,transparent)}
 /* фон-панель: чуть светлее + текстура сетки + подсветка в углу */
@@ -437,12 +437,31 @@ td b{color:#fff}
 .flowline__t{font-size:13px;color:var(--text);line-height:1.35}
 .flowline__s{font-size:11.5px;color:var(--muted-2);display:block;margin-top:3px}
 
-/* ── секция с фоновым фото ───────────────────────────────────── */
-.sec--photo{position:relative;overflow:hidden}
-.sec--photo>.sec__bg{position:absolute;inset:0;z-index:-1}
-.sec--photo>.sec__bg img{width:100%;height:100%;object-fit:cover}
+/* ── фоновый слой секции: фото + текстурная сетка + виньетка ─── */
+.sec--photo{position:relative;overflow:hidden;isolation:isolate}
+.sec--photo>.sec__bg{position:absolute;inset:0;z-index:-2;pointer-events:none}
+.sec--photo>.sec__bg img{width:100%;height:100%;object-fit:cover;object-position:center}
+/* затемнение: текст всегда читается, фото работает как атмосфера */
 .sec--photo>.sec__bg::after{content:"";position:absolute;inset:0;
-  background:linear-gradient(180deg,rgba(10,9,8,.93),rgba(10,9,8,.82) 45%,rgba(10,9,8,.95))}
+  background:
+    radial-gradient(120% 92% at 50% 48%,rgba(10,9,8,.40),rgba(10,9,8,.86) 82%),
+    linear-gradient(180deg,rgba(10,9,8,.92),rgba(10,9,8,.52) 40%,rgba(10,9,8,.92))}
+/* сетка сверху — та же, что в панельных секциях: держит премиальную фактуру */
+.sec--photo::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;opacity:.42;
+  background-image:linear-gradient(rgba(255,255,255,.02) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.02) 1px,transparent 1px);
+  background-size:64px 64px;
+  mask-image:radial-gradient(130% 100% at 50% 0%,#000 22%,transparent 82%)}
+/* сила фона: тихие блоки — тише, акцентные — заметнее */
+.sec--bg-soft>.sec__bg img{opacity:.55}
+.sec--bg-mid>.sec__bg img{opacity:.78}
+.sec--bg-strong>.sec__bg img{opacity:1}
+/* верхний разделитель у фоновой секции не нужен — её край задаёт сам фон */
+.sec--photo+.sec--photo::before,.sec+.sec--photo::after{display:none}
+@media (max-width:760px){
+  .sec--photo>.sec__bg img{opacity:.42}
+  .sec--photo::before{opacity:.3}
+}
 
 /* ── статьи по теме ──────────────────────────────────────────── */
 .artlist{display:grid;grid-template-columns:repeat(auto-fit,minmax(258px,1fr));gap:clamp(12px,1.4vw,18px)}
