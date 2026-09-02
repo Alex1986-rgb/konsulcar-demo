@@ -440,27 +440,47 @@ td b{color:#fff}
 /* ── фоновый слой секции: фото + текстурная сетка + виньетка ─── */
 .sec--photo{position:relative;overflow:hidden;isolation:isolate}
 .sec--photo>.sec__bg{position:absolute;inset:0;z-index:-2;pointer-events:none}
-.sec--photo>.sec__bg img{width:100%;height:100%;object-fit:cover;object-position:center}
+.sec--photo>.sec__bg img{width:100%;height:100%;object-fit:cover;object-position:center;
+  filter:brightness(1.28) contrast(1.05) saturate(1.06)}
 /* затемнение: текст всегда читается, фото работает как атмосфера */
 .sec--photo>.sec__bg::after{content:"";position:absolute;inset:0;
   background:
-    radial-gradient(120% 92% at 50% 48%,rgba(10,9,8,.40),rgba(10,9,8,.86) 82%),
-    linear-gradient(180deg,rgba(10,9,8,.92),rgba(10,9,8,.52) 40%,rgba(10,9,8,.92))}
+    radial-gradient(125% 95% at 50% 45%,rgba(10,9,8,.06),rgba(10,9,8,.56) 88%),
+    linear-gradient(180deg,rgba(10,9,8,.80),rgba(10,9,8,.16) 40%,rgba(10,9,8,.82))}
 /* сетка сверху — та же, что в панельных секциях: держит премиальную фактуру */
-.sec--photo::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;opacity:.42;
+.sec--photo .sec__head h2,.sec--photo .sec__head p,.sec--photo .sec__label,
+.sec--photo h1,.sec--photo .lead{text-shadow:0 2px 22px rgba(6,5,5,.95),0 1px 4px rgba(6,5,5,.85)}
+/* мягкая подушка под шапкой секции: заголовок читается на любом фоне, фото не притухает */
+.sec--photo .sec__head{padding:clamp(14px,1.6vw,22px) clamp(18px,2.4vw,34px);border-radius:20px;
+  background:radial-gradient(75% 130% at 50% 50%,rgba(7,6,5,.82) 0%,rgba(7,6,5,.52) 58%,rgba(7,6,5,0) 100%)}
+/* контент-плашки на фоне — «стекло»: фон просвечивает, но текст на непрозрачной подложке */
+.sec--photo .card,.sec--photo .step,.sec--photo .prod,.sec--photo .chip,
+.sec--photo .fact,.sec--photo .faq details,.sec--photo .tbl-wrap,.sec--photo .form{
+  background-color:rgba(17,14,12,.86);backdrop-filter:blur(7px) saturate(1.1);
+  border-color:rgba(201,162,39,.22)}
+.sec--photo .note{background:rgba(17,14,12,.78);backdrop-filter:blur(7px)}
+/* списки на фоне — в стеклянной панели, иначе текст спорит с фотографией */
+.sec--photo .ul-check{background:rgba(15,13,11,.80);backdrop-filter:blur(8px) saturate(1.1);
+  border:1px solid rgba(201,162,39,.16);border-radius:18px;
+  padding:clamp(20px,2.2vw,28px) clamp(22px,2.6vw,32px)}
+.sec--photo .card .ul-check,.sec--photo .step .ul-check{background:none;border:0;padding:0;backdrop-filter:none}
+.sec--photo::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;opacity:.34;
   background-image:linear-gradient(rgba(255,255,255,.02) 1px,transparent 1px),
     linear-gradient(90deg,rgba(255,255,255,.02) 1px,transparent 1px);
   background-size:64px 64px;
   mask-image:radial-gradient(130% 100% at 50% 0%,#000 22%,transparent 82%)}
 /* сила фона: тихие блоки — тише, акцентные — заметнее */
-.sec--bg-soft>.sec__bg img{opacity:.55}
-.sec--bg-mid>.sec__bg img{opacity:.78}
+.sec--bg-soft>.sec__bg img{opacity:.82}
+.sec--bg-mid>.sec__bg img{opacity:.94}
 .sec--bg-strong>.sec__bg img{opacity:1}
 /* верхний разделитель у фоновой секции не нужен — её край задаёт сам фон */
 .sec--photo+.sec--photo::before,.sec+.sec--photo::after{display:none}
 @media (max-width:760px){
-  .sec--photo>.sec__bg img{opacity:.42}
-  .sec--photo::before{opacity:.3}
+  .sec--photo>.sec__bg img{opacity:.62;filter:brightness(1.18) contrast(1.04)}
+  .sec--photo::before{opacity:.24}
+  .sec--photo>.sec__bg::after{background:
+    radial-gradient(130% 95% at 50% 45%,rgba(10,9,8,.20),rgba(10,9,8,.70) 88%),
+    linear-gradient(180deg,rgba(10,9,8,.86),rgba(10,9,8,.34) 40%,rgba(10,9,8,.88))}
 }
 
 /* ── статьи по теме ──────────────────────────────────────────── */
