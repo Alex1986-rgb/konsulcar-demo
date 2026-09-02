@@ -75,9 +75,37 @@
   <p class="lead">Здесь позиции, которые вы отложили. Отправьте список с VIN — вернёмся ценой
   и сроком по каждой строке. Ничего не заказывается без вашего согласия.</p>
   <div id="cart-list" style="margin:26px 0"></div>
-  <div id="cart-form"></div>
+  <div id="zayavka">
+<form class="form" data-form action="#" data-demo="1" method="post">
+  <input type="hidden" name="source" value="Список запроса — запчасти">
+  <input type="hidden" name="page" value="">
+  <input type="hidden" name="t" value="" data-opened>
+  <!-- ловушка для ботов: человек этого поля не видит и не заполняет.
+       autocomplete=off обязателен — Яндекс.Браузер иначе автозаполняет и ломает отправку -->
+  <div aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden">
+    <label>Компания<input type="text" name="company_extra" tabindex="-1" autocomplete="off" value=""></label>
+  </div>
+  <h3>Отправить список</h3>
+  <p style="color:var(--muted);font-size:15px;margin-bottom:18px">Ваш список позиций приложится к заявке автоматически.</p>
+  <div class="form__grid">
+    <div class="field"><label for="f-name-x">Ваше имя</label>
+      <input id="f-name-x" name="name" placeholder="Как к вам обращаться" autocomplete="name"></div>
+    <div class="field"><label for="f-tel-x">Телефон *</label>
+      <input id="f-tel-x" name="phone" type="tel" required placeholder="+7 (___) ___-__-__" autocomplete="tel"></div>
+    <div class="field field--full"><label for="k-vin">VIN автомобиля</label>
+        <input id="k-vin" name="vin" placeholder="17 символов — так подбор точнее"></div>
+        <input type="hidden" name="items" id="k-items" value="">
+    <div class="field field--full"><label for="f-msg-x">Комментарий</label>
+      <textarea id="f-msg-x" name="comment" placeholder="Марка, модель, бюджет или вопрос"></textarea></div>
+    <div class="field field--full">
+      <label class="consent"><input type="checkbox" name="consent" required>
+        <span>Согласен с <a href="/konsulcar-demo/policy/">политикой конфиденциальности</a> и <a href="/konsulcar-demo/soglasie/">обработкой персональных данных</a></span></label>
+    </div>
+    <div class="field field--full"><button class="btn btn--gold btn--wide" type="submit">Отправить запрос</button></div>
+  </div>
+  <div class="form__msg" data-msg></div>
+</form></div>
 </div></section>
-<script>window.__cartFormHTML = "\n<form class=\"form\" data-form action=\"/api/lead.php\" method=\"post\">\n  <input type=\"hidden\" name=\"source\" value=\"Список запроса — запчасти\">\n  <input type=\"hidden\" name=\"page\" value=\"\">\n  <input type=\"hidden\" name=\"t\" value=\"\" data-opened>\n  <!-- ловушка для ботов: человек этого поля не видит и не заполняет.\n       autocomplete=off обязателен — Яндекс.Браузер иначе автозаполняет и ломает отправку -->\n  <div aria-hidden=\"true\" style=\"position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden\">\n    <label>Компания<input type=\"text\" name=\"company_extra\" tabindex=\"-1\" autocomplete=\"off\" value=\"\"></label>\n  </div>\n  <h3>Отправить список</h3>\n  <p style=\"color:var(--muted);font-size:15px;margin-bottom:18px\">Приложим ваш список к заявке автоматически.</p>\n  <div class=\"form__grid\">\n    <div class=\"field\"><label for=\"f-name-x\">Ваше имя</label>\n      <input id=\"f-name-x\" name=\"name\" placeholder=\"Как к вам обращаться\" autocomplete=\"name\"></div>\n    <div class=\"field\"><label for=\"f-tel-x\">Телефон *</label>\n      <input id=\"f-tel-x\" name=\"phone\" type=\"tel\" required placeholder=\"+7 (___) ___-__-__\" autocomplete=\"tel\"></div>\n    <div class=\"field field--full\"><label for=\"k-vin\">VIN автомобиля</label>\n        <input id=\"k-vin\" name=\"vin\" placeholder=\"17 символов — так подбор точнее\"></div>\n        <input type=\"hidden\" name=\"items\" id=\"k-items\" value=\"\">\n    <div class=\"field field--full\"><label for=\"f-msg-x\">Комментарий</label>\n      <textarea id=\"f-msg-x\" name=\"comment\" placeholder=\"Марка, модель, бюджет или вопрос\"></textarea></div>\n    <div class=\"field field--full\">\n      <label class=\"consent\"><input type=\"checkbox\" name=\"consent\" required>\n        <span>Согласен с <a href=\"/policy/\">политикой конфиденциальности</a> и <a href=\"/soglasie/\">обработкой персональных данных</a></span></label>\n    </div>\n    <div class=\"field field--full\"><button class=\"btn btn--gold btn--wide\" type=\"submit\">Отправить запрос</button></div>\n  </div>\n  <div class=\"form__msg\" data-msg></div>\n</form>";</script>
 <footer class="ftr">
   <div class="wrap">
     <div class="ftr__top">
@@ -96,9 +124,7 @@
           Импорт автомобилей из Кореи, Китая, Японии, США и ОАЭ, оформление, техосмотр,
           страхование, дооснащение и запчасти — в одном центре.</p>
         <div class="ftr__soc">
-          <a href="https://t.me/konsulcar" aria-label="Telegram" rel="nofollow"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M21.8 4.2 2.9 11.4c-.9.4-.9 1.5 0 1.8l4.4 1.4 1.7 5.2c.2.7 1 .9 1.6.4l2.4-2 4.5 3.3c.7.5 1.6.1 1.8-.7l3.3-15.4c.2-.9-.7-1.6-1.5-1.2zM9.3 14.6l8.6-5.3-6.6 6.1-.3 3z"/></svg></a>
-          <a href="https://wa.me/74951200001" aria-label="WhatsApp" rel="nofollow"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 00-8.6 15.1L2 22l5-1.3A10 10 0 1012 2zm5.3 14c-.2.6-1.3 1.2-1.8 1.2-.5 0-2.4-.2-4.7-2.3-2-1.9-2.5-3.5-2.7-4.1-.2-.6.2-1.6.6-2 .3-.3.6-.3.8-.3h.5c.2 0 .4 0 .6.5l.8 2c.1.2 0 .4-.1.6l-.4.5c-.1.2-.2.3 0 .6.2.4.8 1.2 1.5 1.8.9.8 1.5 1 1.8 1.1.2 0 .4 0 .5-.2l.7-.8c.2-.2.4-.2.6-.1l1.9.9c.4.2.4.3.4.5s0 .8-.2 1.2z"/></svg></a>
-          <a href="#" aria-label="MAX" rel="nofollow"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 20V4l9 11 9-11v16h-3.6v-9.3L12 18l-5.4-7.3V20z"/></svg></a>
+          <a href="https://t.me/konsulcar" aria-label="Telegram" rel="nofollow" target="_blank"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M21.8 4.2 2.9 11.4c-.9.4-.9 1.5 0 1.8l4.4 1.4 1.7 5.2c.2.7 1 .9 1.6.4l2.4-2 4.5 3.3c.7.5 1.6.1 1.8-.7l3.3-15.4c.2-.9-.7-1.6-1.5-1.2zM9.3 14.6l8.6-5.3-6.6 6.1-.3 3z"/></svg></a><a href="https://wa.me/74951200001" aria-label="WhatsApp" rel="nofollow" target="_blank"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 00-8.6 15.1L2 22l5-1.3A10 10 0 1012 2zm5.3 14c-.2.6-1.3 1.2-1.8 1.2-.5 0-2.4-.2-4.7-2.3-2-1.9-2.5-3.5-2.7-4.1-.2-.6.2-1.6.6-2 .3-.3.6-.3.8-.3h.5c.2 0 .4 0 .6.5l.8 2c.1.2 0 .4-.1.6l-.4.5c-.1.2-.2.3 0 .6.2.4.8 1.2 1.5 1.8.9.8 1.5 1 1.8 1.1.2 0 .4 0 .5-.2l.7-.8c.2-.2.4-.2.6-.1l1.9.9c.4.2.4.3.4.5s0 .8-.2 1.2z"/></svg></a>
         </div>
       </div>
     <div><h4>Импорт автомобилей</h4><ul><li><a href="/konsulcar-demo/import-avto/">Импорт под ключ</a></li><li><a href="/konsulcar-demo/import-avto/koreya/">Из Кореи</a></li><li><a href="/konsulcar-demo/import-avto/kitay/">Из Китая</a></li><li><a href="/konsulcar-demo/import-avto/yaponiya/">Из Японии</a></li><li><a href="/konsulcar-demo/import-avto/usa/">Из США</a></li><li><a href="/konsulcar-demo/import-avto/oae/">Из ОАЭ</a></li></ul></div>
@@ -127,6 +153,7 @@
   <a class="btn btn--ghost btn--sm" href="tel:+74951200001">Позвонить</a>
   <a class="btn btn--gold btn--sm" href="#zayavka">Оставить заявку</a>
 </div>
-<script src="/konsulcar-demo/js/site.js?v=24" defer></script>
+<script>window.__phone="+7 (495) 120-00-01";window.__phoneHref="+74951200001";</script>
+<script src="/konsulcar-demo/js/site.js?v=30" defer></script>
 </body>
 </html>

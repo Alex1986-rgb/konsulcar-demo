@@ -103,8 +103,7 @@
       var c = cart();
       if (!c.length) {
         list.innerHTML = '<div class="note">Список пуст. Откройте <a href="/catalog/">каталог</a> ' +
-          'и добавьте нужные позиции — или сразу отправьте <a href="/catalog/podbor-po-vin/">VIN на подбор</a>.';
-        document.getElementById('cart-form').innerHTML = '';
+          'и добавьте нужные позиции — или сразу отправьте <a href="/catalog/podbor-po-vin/">VIN на подбор</a>.</div>';
         return;
       }
       list.innerHTML = '<div class="tbl-wrap"><table><thead><tr><th>Позиция</th><th>Артикул</th><th></th></tr></thead><tbody>' +
@@ -112,8 +111,6 @@
           return '<tr><td><b>' + x.name + '</b></td><td>' + x.art + '</td>' +
             '<td style="text-align:right"><button class="btn btn--ghost btn--sm" data-del="' + i + '">Убрать</button></td></tr>';
         }).join('') + '</tbody></table></div>';
-      var f = document.getElementById('cart-form');
-      if (f && !f.innerHTML && window.__cartFormHTML) f.innerHTML = window.__cartFormHTML;
       var items = document.getElementById('k-items');
       if (items) items.value = c.map(function (x) { return x.art + ' — ' + x.name; }).join('; ');
       bindForms();
@@ -174,8 +171,10 @@
           })
           .catch(function () {
             msg.className = 'form__msg form__msg--err';
-            msg.innerHTML = 'Не удалось отправить. Позвоните, пожалуйста: ' +
-              '<a href="tel:' + (document.querySelector('.hdr__tel a') || {}).textContent + '">по телефону в шапке</a>.';
+            var ph = window.__phone || '';
+            msg.innerHTML = 'Не удалось отправить заявку. Позвоните, пожалуйста' +
+              (ph ? ': <a href="tel:' + (window.__phoneHref || '') + '">' + ph + '</a>' : '') +
+              ' — мы примем обращение по телефону.';
           })
           .finally(function () { btn.disabled = false; btn.textContent = t; });
       });
