@@ -11,16 +11,22 @@
 <meta property="og:title" content="Список запроса по запчастям | КонсулКар">
 <meta property="og:description" content="Ваш список отложенных позиций по запчастям. Отправьте его вместе с VIN — вернёмся ценой и сроком поставки по каждой строке.">
 <meta property="og:url" content="https://konsulcar.ru/catalog/korzina/">
-<meta property="og:image" content="https://konsulcar.ru/img/og-default.svg">
+<meta property="og:image" content="https://konsulcar.ru/img/og-default.jpg">
 <meta property="og:locale" content="ru_RU">
 <meta name="theme-color" content="#0a0908">
 <link rel="icon" href="/konsulcar-demo/img/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/konsulcar-demo/img/icon-192.png" sizes="192x192" type="image/png">
+<link rel="apple-touch-icon" href="/konsulcar-demo/img/apple-touch-icon.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Manrope:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="/konsulcar-demo/css/main.css?v=21">
+<link rel="stylesheet" href="/konsulcar-demo/css/main.css?v=28">
 <!-- Яндекс.Метрика подключится после получения номера счётчика -->
 </head>
 <body>
+<a class="skip" href="#content">Перейти к содержимому</a>
 
 <div class="demo-bar">
   <b>Демонстрационная версия</b>
@@ -62,7 +68,8 @@
     </div>
     <button class="burger" id="burger" aria-label="Меню" aria-expanded="false" aria-controls="nav"><i></i></button>
   </div>
-</header><div class="wrap crumbs"><ol><li><a href="/konsulcar-demo/">Главная</a></li><li><a href="/konsulcar-demo/catalog/">Запчасти</a></li><li>Список запроса</li></ol></div>
+</header>
+<span id="content" tabindex="-1"></span><div class="wrap crumbs"><ol><li><a href="/konsulcar-demo/">Главная</a></li><li><a href="/konsulcar-demo/catalog/">Запчасти</a></li><li>Список запроса</li></ol></div>
 <section class="sec sec--tight"><div class="wrap" style="max-width:940px">
   <h1>Список запроса</h1>
   <p class="lead">Здесь позиции, которые вы отложили. Отправьте список с VIN — вернёмся ценой
@@ -70,7 +77,7 @@
   <div id="cart-list" style="margin:26px 0"></div>
   <div id="cart-form"></div>
 </div></section>
-<script>window.__cartFormHTML = "\n<form class=\"form\" data-form action=\"/api/lead.php\" method=\"post\">\n  <input type=\"hidden\" name=\"source\" value=\"Список запроса — запчасти\">\n  <input type=\"hidden\" name=\"page\" value=\"\">\n  <h3>Отправить список</h3>\n  <p style=\"color:var(--muted);font-size:15px;margin-bottom:18px\">Приложим ваш список к заявке автоматически.</p>\n  <div class=\"form__grid\">\n    <div class=\"field\"><label for=\"f-name-x\">Ваше имя</label>\n      <input id=\"f-name-x\" name=\"name\" placeholder=\"Как к вам обращаться\" autocomplete=\"name\"></div>\n    <div class=\"field\"><label for=\"f-tel-x\">Телефон *</label>\n      <input id=\"f-tel-x\" name=\"phone\" type=\"tel\" required placeholder=\"+7 (___) ___-__-__\" autocomplete=\"tel\"></div>\n    <div class=\"field field--full\"><label for=\"k-vin\">VIN автомобиля</label>\n        <input id=\"k-vin\" name=\"vin\" placeholder=\"17 символов — так подбор точнее\"></div>\n        <input type=\"hidden\" name=\"items\" id=\"k-items\" value=\"\">\n    <div class=\"field field--full\"><label for=\"f-msg-x\">Комментарий</label>\n      <textarea id=\"f-msg-x\" name=\"comment\" placeholder=\"Марка, модель, бюджет или вопрос\"></textarea></div>\n    <div class=\"field field--full\">\n      <label class=\"consent\"><input type=\"checkbox\" name=\"consent\" required>\n        <span>Согласен с <a href=\"/policy/\">политикой конфиденциальности</a> и <a href=\"/soglasie/\">обработкой персональных данных</a></span></label>\n    </div>\n    <div class=\"field field--full\"><button class=\"btn btn--gold btn--wide\" type=\"submit\">Отправить запрос</button></div>\n  </div>\n  <div class=\"form__msg\" data-msg></div>\n</form>";</script>
+<script>window.__cartFormHTML = "\n<form class=\"form\" data-form action=\"/api/lead.php\" method=\"post\">\n  <input type=\"hidden\" name=\"source\" value=\"Список запроса — запчасти\">\n  <input type=\"hidden\" name=\"page\" value=\"\">\n  <input type=\"hidden\" name=\"t\" value=\"\" data-opened>\n  <!-- ловушка для ботов: человек этого поля не видит и не заполняет.\n       autocomplete=off обязателен — Яндекс.Браузер иначе автозаполняет и ломает отправку -->\n  <div aria-hidden=\"true\" style=\"position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden\">\n    <label>Компания<input type=\"text\" name=\"company_extra\" tabindex=\"-1\" autocomplete=\"off\" value=\"\"></label>\n  </div>\n  <h3>Отправить список</h3>\n  <p style=\"color:var(--muted);font-size:15px;margin-bottom:18px\">Приложим ваш список к заявке автоматически.</p>\n  <div class=\"form__grid\">\n    <div class=\"field\"><label for=\"f-name-x\">Ваше имя</label>\n      <input id=\"f-name-x\" name=\"name\" placeholder=\"Как к вам обращаться\" autocomplete=\"name\"></div>\n    <div class=\"field\"><label for=\"f-tel-x\">Телефон *</label>\n      <input id=\"f-tel-x\" name=\"phone\" type=\"tel\" required placeholder=\"+7 (___) ___-__-__\" autocomplete=\"tel\"></div>\n    <div class=\"field field--full\"><label for=\"k-vin\">VIN автомобиля</label>\n        <input id=\"k-vin\" name=\"vin\" placeholder=\"17 символов — так подбор точнее\"></div>\n        <input type=\"hidden\" name=\"items\" id=\"k-items\" value=\"\">\n    <div class=\"field field--full\"><label for=\"f-msg-x\">Комментарий</label>\n      <textarea id=\"f-msg-x\" name=\"comment\" placeholder=\"Марка, модель, бюджет или вопрос\"></textarea></div>\n    <div class=\"field field--full\">\n      <label class=\"consent\"><input type=\"checkbox\" name=\"consent\" required>\n        <span>Согласен с <a href=\"/policy/\">политикой конфиденциальности</a> и <a href=\"/soglasie/\">обработкой персональных данных</a></span></label>\n    </div>\n    <div class=\"field field--full\"><button class=\"btn btn--gold btn--wide\" type=\"submit\">Отправить запрос</button></div>\n  </div>\n  <div class=\"form__msg\" data-msg></div>\n</form>";</script>
 <footer class="ftr">
   <div class="wrap">
     <div class="ftr__top">
@@ -120,6 +127,6 @@
   <a class="btn btn--ghost btn--sm" href="tel:+74951200001">Позвонить</a>
   <a class="btn btn--gold btn--sm" href="#zayavka">Оставить заявку</a>
 </div>
-<script src="/konsulcar-demo/js/site.js?v=13" defer></script>
+<script src="/konsulcar-demo/js/site.js?v=24" defer></script>
 </body>
 </html>

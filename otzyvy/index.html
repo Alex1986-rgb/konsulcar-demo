@@ -11,16 +11,22 @@
 <meta property="og:title" content="Отзывы клиентов КонсулКар">
 <meta property="og:description" content="Как мы собираем отзывы и что показываем вместо выдуманных цитат: реальные привезённые автомобили с ценами и сроками.">
 <meta property="og:url" content="https://konsulcar.ru/otzyvy/">
-<meta property="og:image" content="https://konsulcar.ru/img/og-default.svg">
+<meta property="og:image" content="https://konsulcar.ru/img/og-default.jpg">
 <meta property="og:locale" content="ru_RU">
 <meta name="theme-color" content="#0a0908">
 <link rel="icon" href="/konsulcar-demo/img/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/konsulcar-demo/img/icon-192.png" sizes="192x192" type="image/png">
+<link rel="apple-touch-icon" href="/konsulcar-demo/img/apple-touch-icon.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Manrope:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="/konsulcar-demo/css/main.css?v=21">
+<link rel="stylesheet" href="/konsulcar-demo/css/main.css?v=28">
 <!-- Яндекс.Метрика подключится после получения номера счётчика -->
 </head>
 <body>
+<a class="skip" href="#content">Перейти к содержимому</a>
 
 <div class="demo-bar">
   <b>Демонстрационная версия</b>
@@ -62,7 +68,8 @@
     </div>
     <button class="burger" id="burger" aria-label="Меню" aria-expanded="false" aria-controls="nav"><i></i></button>
   </div>
-</header><div class="wrap crumbs"><ol><li><a href="/konsulcar-demo/">Главная</a></li><li>Отзывы</li></ol></div>
+</header>
+<span id="content" tabindex="-1"></span><div class="wrap crumbs"><ol><li><a href="/konsulcar-demo/">Главная</a></li><li>Отзывы</li></ol></div>
 <section class="sec sec--tight"><div class="wrap" style="max-width:880px">
   <h1>Отзывы</h1>
   <p class="lead">Мы не публикуем сочинённые отзывы с чужими фотографиями — это видно, и это
@@ -76,6 +83,23 @@
     <a class="btn btn--ghost" href="/konsulcar-demo/o-kompanii/">Как мы работаем</a>
   </div>
 </div></section>
+<section class="sec sec--deep">
+  <div class="wrap">
+    <div class="sec__head">
+      <div class="sec__label">Как это работает</div>
+      <h2>Почему у нас нет стены цитат</h2>
+      
+    </div>
+    <div style="max-width:900px;margin:0 auto">
+        <p class="lead">Сочинить двадцать отзывов с чужими аватарками — работа на полчаса, и именно
+        поэтому такие блоки ничего не значат. Мы выбрали другой путь: показываем то, что можно
+        проверить самостоятельно.</p>
+        <div style="margin-top:22px"><ul class="ul-check ul-check--2"><li><svg class="ic" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 17l6 6L26 9"/></svg><span>Отзыв просим оставить там, где мы не можем его отредактировать — на картах и внешних площадках</span></li><li><svg class="ic" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 17l6 6L26 9"/></svg><span>В архиве предложений видно реальные автомобили с ценами под ключ и сроками доставки</span></li><li><svg class="ic" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 17l6 6L26 9"/></svg><span>Аккредитация пункта техосмотра проверяется по единой базе — это не наше слово, а факт</span></li><li><svg class="ic" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 17l6 6L26 9"/></svg><span>Любой расчёт даём до оплаты: по нему видно, разбираемся ли мы в вопросе</span></li></ul></div>
+        <div class="note" style="margin-top:22px">Когда появятся отзывы на внешних площадках,
+        они будут здесь со ссылкой на источник — чтобы каждый мог открыть и убедиться, что отзыв настоящий.</div>
+      </div>
+  </div>
+</section>
 <section class="sec  sec--photo sec--bg-soft">
   <div class="sec__bg"><picture><source srcset="/konsulcar-demo/img/photo/art-aukcion.webp" type="image/webp">
     <img src="/konsulcar-demo/img/photo/art-aukcion.jpg" alt="" class=""
@@ -148,6 +172,6 @@
   <a class="btn btn--ghost btn--sm" href="tel:+74951200001">Позвонить</a>
   <a class="btn btn--gold btn--sm" href="#zayavka">Оставить заявку</a>
 </div>
-<script src="/konsulcar-demo/js/site.js?v=13" defer></script>
+<script src="/konsulcar-demo/js/site.js?v=24" defer></script>
 </body>
 </html>

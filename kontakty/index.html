@@ -5,22 +5,28 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Контакты КонсулКар — телефон, почта, режим работы</title>
 <meta name="robots" content="noindex,nofollow">
-<meta name="description" content="Свяжитесь с КонсулКар: телефон +7 (495) 120-00-01, почта info@konsulcar.ru. Ежедневно с 9:00 до 21:00. Импорт автомобилей, оформление, техосмотр, страхование, дооснащение, запчасти.">
+<meta name="description" content="Свяжитесь с КонсулКар: телефон +7 (495) 120-00-01, почта info@konsulcar.ru. Ежедневно с 9:00 до 21:00. Импорт автомобилей, оформление, техосмотр, страхование">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="КонсулКар">
 <meta property="og:title" content="Контакты КонсулКар — телефон, почта, режим работы">
-<meta property="og:description" content="Свяжитесь с КонсулКар: телефон +7 (495) 120-00-01, почта info@konsulcar.ru. Ежедневно с 9:00 до 21:00. Импорт автомобилей, оформление, техосмотр, страхование, дооснащение, запчасти.">
+<meta property="og:description" content="Свяжитесь с КонсулКар: телефон +7 (495) 120-00-01, почта info@konsulcar.ru. Ежедневно с 9:00 до 21:00. Импорт автомобилей, оформление, техосмотр, страхование">
 <meta property="og:url" content="https://konsulcar.ru/kontakty/">
-<meta property="og:image" content="https://konsulcar.ru/img/og-default.svg">
+<meta property="og:image" content="https://konsulcar.ru/img/og-default.jpg">
 <meta property="og:locale" content="ru_RU">
 <meta name="theme-color" content="#0a0908">
 <link rel="icon" href="/konsulcar-demo/img/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/konsulcar-demo/img/icon-192.png" sizes="192x192" type="image/png">
+<link rel="apple-touch-icon" href="/konsulcar-demo/img/apple-touch-icon.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Manrope:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="/konsulcar-demo/css/main.css?v=21">
+<link rel="stylesheet" href="/konsulcar-demo/css/main.css?v=28">
 <!-- Яндекс.Метрика подключится после получения номера счётчика -->
 </head>
 <body>
+<a class="skip" href="#content">Перейти к содержимому</a>
 
 <div class="demo-bar">
   <b>Демонстрационная версия</b>
@@ -62,7 +68,8 @@
     </div>
     <button class="burger" id="burger" aria-label="Меню" aria-expanded="false" aria-controls="nav"><i></i></button>
   </div>
-</header><div class="wrap crumbs"><ol><li><a href="/konsulcar-demo/">Главная</a></li><li>Контакты</li></ol></div>
+</header>
+<span id="content" tabindex="-1"></span><div class="wrap crumbs"><ol><li><a href="/konsulcar-demo/">Главная</a></li><li>Контакты</li></ol></div>
 <section class="sec sec--tight"><div class="wrap">
   <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(24px,4vw,54px);align-items:start">
     <div>
@@ -88,6 +95,12 @@
 <form class="form" data-form action="#" data-demo="1" method="post">
   <input type="hidden" name="source" value="Контакты">
   <input type="hidden" name="page" value="">
+  <input type="hidden" name="t" value="" data-opened>
+  <!-- ловушка для ботов: человек этого поля не видит и не заполняет.
+       autocomplete=off обязателен — Яндекс.Браузер иначе автозаполняет и ломает отправку -->
+  <div aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden">
+    <label>Компания<input type="text" name="company_extra" tabindex="-1" autocomplete="off" value=""></label>
+  </div>
   <h3>Написать нам</h3>
   <p style="color:var(--muted);font-size:15px;margin-bottom:18px">Ответим в рабочее время. Опишите задачу — перезвоним с конкретикой, а не с «давайте обсудим».</p>
   <div class="form__grid">
@@ -109,6 +122,67 @@
   </div>
 </div></section>
 <style>@media(max-width:860px){.sec--tight .wrap>div[style*=grid]{grid-template-columns:1fr!important}}</style>
+<section class="sec sec--deep">
+  <div class="wrap">
+    <div class="sec__head">
+      <div class="sec__label">Как связаться</div>
+      <h2>Выберите удобный способ</h2>
+      
+    </div>
+    <div class="grid grid--3">
+        <div class="card"><span class="card__ic"><svg class="ic" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4l3 6-3 2c1 3 4 6 7 7l2-3 6 3-2 5c-9 1-19-9-18-18z"/></svg></span><h3>Телефон</h3>
+          <p>Самый быстрый способ: по импорту и подбору сразу считаем ориентир по цене под ключ,
+          по запчастям — говорим, что есть в наличии.</p>
+          <span class="card__more"><a href="tel:+74951200001">+7 (495) 120-00-01</a></span></div>
+        <div class="card"><span class="card__ic"><svg class="ic" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="7" width="26" height="18" rx="2"/><path d="M3 9l13 9 13-9"/></svg></span><h3>Почта и мессенджеры</h3>
+          <p>Удобно, когда нужно приложить фото детали, документы или ссылку на автомобиль.
+          Отвечаем в рабочее время.</p>
+          <span class="card__more"><a href="mailto:info@konsulcar.ru">info@konsulcar.ru</a></span></div>
+        <div class="card"><span class="card__ic"><svg class="ic" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3h11l5 5v21H8z"/><path d="M19 3v6h5"/><path d="M12 15h8M12 19h8M12 23h5"/></svg></span><h3>Форма на сайте</h3>
+          <p>Заявка попадает менеджеру вместе с указанием раздела, откуда вы её отправили —
+          не придётся заново объяснять задачу.</p>
+          <span class="card__more"><a href="#zayavka">Заполнить<svg class="ic" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 8l8 8-8 8"/></svg></a></span></div>
+      </div>
+  </div>
+</section>
+<section class="sec  sec--photo sec--bg-soft">
+  <div class="sec__bg"><picture><source srcset="/konsulcar-demo/img/photo/art-dokumenty.webp" type="image/webp">
+    <img src="/konsulcar-demo/img/photo/art-dokumenty.jpg" alt="" class=""
+    loading="lazy"  decoding="async"></picture></div>
+  <div class="wrap">
+    <div class="sec__head">
+      <div class="sec__label">Чтобы разговор был по делу</div>
+      <h2>Что подготовить перед обращением</h2>
+      
+    </div>
+    <div class="grid grid--2">
+        <div class="card"><h3>Если хотите привезти автомобиль</h3>
+          <div style="margin-top:12px"><ul class="ul-check"><li><svg class="ic" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 17l6 6L26 9"/></svg><span>Какой автомобиль интересует: марка, модель, желаемый год</span></li><li><svg class="ic" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 17l6 6L26 9"/></svg><span>Бюджет под ключ — итоговая сумма, которую готовы потратить</span></li><li><svg class="ic" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 17l6 6L26 9"/></svg><span>Для чего машина: город, трасса, семья, работа — это влияет на выбор версии</span></li><li><svg class="ic" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 17l6 6L26 9"/></svg><span>Есть ли предпочтения по стране поставки или доверяете подбор нам</span></li></ul></div></div>
+        <div class="card"><h3>Если нужны услуги или запчасти</h3>
+          <div style="margin-top:12px"><ul class="ul-check"><li><svg class="ic" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 17l6 6L26 9"/></svg><span>VIN автомобиля — по нему подбор точный, а не «примерно похожий»</span></li><li><svg class="ic" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 17l6 6L26 9"/></svg><span>Что именно нужно: список позиций, фото детали или номер со старой</span></li><li><svg class="ic" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 17l6 6L26 9"/></svg><span>По оформлению — какие документы уже на руках</span></li><li><svg class="ic" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 17l6 6L26 9"/></svg><span>По дооснащению — марка, модель, год и тип головного устройства</span></li></ul></div></div>
+      </div>
+  </div>
+</section>
+<section class="sec sec--deep">
+  <div class="wrap">
+    <div class="sec__head">
+      <div class="sec__label">Режим работы</div>
+      <h2>Когда мы на связи</h2>
+      
+    </div>
+    <div style="max-width:880px;margin:0 auto">
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>Направление</th><th>Когда отвечаем</th></tr></thead><tbody>
+          <tr><td><b>Звонки и заявки</b></td><td>Ежедневно с 9:00 до 21:00</td></tr>
+          <tr><td><b>Подбор автомобилей</b></td><td>Ориентир по цене под ключ — в день обращения, конкретные варианты с рынка — в течение 1–2 рабочих дней</td></tr>
+          <tr><td><b>Запчасти по VIN</b></td><td>В рабочее время: по наличию отвечаем сразу, по заказным позициям называем цену и срок до оформления</td></tr>
+          <tr><td><b>Техосмотр и оформление</b></td><td>По записи — согласуем время, чтобы не ждать в очереди</td></tr>
+          </tbody></table></div>
+        <div class="note" style="margin-top:20px">Адрес офиса уточняется — компания заканчивает
+        оформление помещения. Как только адрес появится, он будет здесь и в карточках на картах.</div>
+      </div>
+  </div>
+</section>
 <footer class="ftr">
   <div class="wrap">
     <div class="ftr__top">
@@ -158,6 +232,6 @@
   <a class="btn btn--ghost btn--sm" href="tel:+74951200001">Позвонить</a>
   <a class="btn btn--gold btn--sm" href="#zayavka">Оставить заявку</a>
 </div>
-<script src="/konsulcar-demo/js/site.js?v=13" defer></script>
+<script src="/konsulcar-demo/js/site.js?v=24" defer></script>
 </body>
 </html>

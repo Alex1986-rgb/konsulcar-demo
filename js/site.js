@@ -9,6 +9,20 @@
     if (open) nav.removeAttribute('data-open'); else nav.setAttribute('data-open', '');
     burger.setAttribute('aria-expanded', String(!open));
   });
+  // закрытое мобильное меню не должно ловить фокус с клавиатуры
+  if (nav) {
+    var syncNav = function () {
+      var mobile = window.matchMedia('(max-width:960px)').matches;
+      var hidden = mobile && !nav.hasAttribute('data-open');
+      nav.querySelectorAll('a').forEach(function (a) {
+        if (hidden) a.setAttribute('tabindex', '-1'); else a.removeAttribute('tabindex');
+      });
+      nav.setAttribute('aria-hidden', String(hidden));
+    };
+    syncNav();
+    if (burger) burger.addEventListener('click', function () { setTimeout(syncNav, 0); });
+    window.addEventListener('resize', syncNav);
+  }
 
   // ── карусель предложений
   var car = document.querySelector('[data-carousel]');
@@ -16,19 +30,49 @@
     var slides = [].slice.call(car.querySelectorAll('[data-slide]'));
     var dots = [].slice.call(document.querySelectorAll('[data-dot]'));
     var cur = 0, timer;
+    // связываем кнопки и слайды: без этого экранный диктор не понимает, чем управляют точки
+    slides.forEach(function (s, k) {
+      s.id = s.id || 'offer-slide-' + k;
+      s.setAttribute('role', 'tabpanel');
+      s.setAttribute('aria-label', 'Предложение ' + (k + 1) + ' из ' + slides.length);
+    });
+    dots.forEach(function (d, k) {
+      d.setAttribute('aria-controls', slides[k] ? slides[k].id : '');
+      d.setAttribute('tabindex', k === 0 ? '0' : '-1');
+    });
     function show(i) {
       cur = (i + slides.length) % slides.length;
       slides.forEach(function (s, k) {
         if (k === cur) { s.hidden = false; s.setAttribute('data-current', ''); }
         else { s.hidden = true; s.removeAttribute('data-current'); }
       });
-      dots.forEach(function (d, k) { d.setAttribute('aria-selected', String(k === cur)); });
+      dots.forEach(function (d, k) {
+        d.setAttribute('aria-selected', String(k === cur));
+        d.setAttribute('tabindex', k === cur ? '0' : '-1');
+      });
     }
     function auto() { clearInterval(timer); if (slides.length > 1) timer = setInterval(function () { show(cur + 1); }, 8000); }
     dots.forEach(function (d, k) { d.addEventListener('click', function () { show(k); auto(); }); });
     if (slides.length > 1) { show(0); auto(); }
     car.addEventListener('mouseenter', function () { clearInterval(timer); });
     car.addEventListener('mouseleave', auto);
+    // автопрокрутка не должна уезжать, пока человек читает или вкладка скрыта
+    car.addEventListener('focusin', function () { clearInterval(timer); });
+    car.addEventListener('focusout', auto);
+    document.addEventListener('visibilitychange', function () {
+      if (document.hidden) clearInterval(timer); else auto();
+    });
+    // управление стрелками, как ожидается от набора вкладок
+    dots.forEach(function (d, k) {
+      d.addEventListener('keydown', function (e) {
+        var next = e.key === 'ArrowRight' ? k + 1 : e.key === 'ArrowLeft' ? k - 1 : null;
+        if (next === null) return;
+        e.preventDefault();
+        show(next); auto();
+        var t = dots[(next + dots.length) % dots.length];
+        if (t) t.focus();
+      });
+    });
   }
 
   // ── список запроса по запчастям (localStorage)
@@ -102,6 +146,8 @@
       if (p) mask(p);
       var pg = f.querySelector('input[name=page]');
       if (pg) pg.value = location.pathname;
+      var op = f.querySelector('[data-opened]');
+      if (op) op.value = String(Date.now());
       f.addEventListener('submit', function (e) {
         e.preventDefault();
         if (f.getAttribute('data-demo')) {
@@ -140,7 +186,7 @@
   // ── плавное появление блоков при скролле
   if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches && 'IntersectionObserver' in window) {
     var targets = document.querySelectorAll('.sec__head, .card, .step, .prod, .chip, .fact, .offer, .form, .faq details');
-    if (targets.length && targets.length < 300) {
+    if (targets.length && targets.length < 1200) {
       var io = new IntersectionObserver(function (entries) {
         entries.forEach(function (e) {
           if (e.isIntersecting) { e.target.classList.add('is-in'); io.unobserve(e.target); }

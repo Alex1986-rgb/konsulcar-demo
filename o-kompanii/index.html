@@ -5,22 +5,28 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>О компании КонсулКар — единый центр автоуслуг</title>
 <meta name="robots" content="noindex,nofollow">
-<meta name="description" content="КонсулКар — единый центр автоуслуг: импорт автомобилей из Кореи, Китая, Японии, США и ОАЭ, оформление, аккредитованный техосмотр, страхование, дооснащение и запчасти. Как мы работаем и за что отвечаем.">
+<meta name="description" content="КонсулКар — единый центр автоуслуг: импорт автомобилей из Кореи, Китая, Японии, США и ОАЭ, оформление, аккредитованный техосмотр, страхование, дооснащение и">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="КонсулКар">
 <meta property="og:title" content="О компании КонсулКар — единый центр автоуслуг">
-<meta property="og:description" content="КонсулКар — единый центр автоуслуг: импорт автомобилей из Кореи, Китая, Японии, США и ОАЭ, оформление, аккредитованный техосмотр, страхование, дооснащение и запчасти. Как мы работаем и за что отвечаем.">
+<meta property="og:description" content="КонсулКар — единый центр автоуслуг: импорт автомобилей из Кореи, Китая, Японии, США и ОАЭ, оформление, аккредитованный техосмотр, страхование, дооснащение и">
 <meta property="og:url" content="https://konsulcar.ru/o-kompanii/">
-<meta property="og:image" content="https://konsulcar.ru/img/og-default.svg">
+<meta property="og:image" content="https://konsulcar.ru/img/og-default.jpg">
 <meta property="og:locale" content="ru_RU">
 <meta name="theme-color" content="#0a0908">
 <link rel="icon" href="/konsulcar-demo/img/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/konsulcar-demo/img/icon-192.png" sizes="192x192" type="image/png">
+<link rel="apple-touch-icon" href="/konsulcar-demo/img/apple-touch-icon.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Manrope:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="/konsulcar-demo/css/main.css?v=21">
+<link rel="stylesheet" href="/konsulcar-demo/css/main.css?v=28">
 <!-- Яндекс.Метрика подключится после получения номера счётчика -->
 </head>
 <body>
+<a class="skip" href="#content">Перейти к содержимому</a>
 
 <div class="demo-bar">
   <b>Демонстрационная версия</b>
@@ -62,7 +68,8 @@
     </div>
     <button class="burger" id="burger" aria-label="Меню" aria-expanded="false" aria-controls="nav"><i></i></button>
   </div>
-</header><div class="wrap crumbs"><ol><li><a href="/konsulcar-demo/">Главная</a></li><li>О компании</li></ol></div>
+</header>
+<span id="content" tabindex="-1"></span><div class="wrap crumbs"><ol><li><a href="/konsulcar-demo/">Главная</a></li><li>О компании</li></ol></div>
 <section class="sec sec--tight"><div class="wrap">
   <div class="split">
     <div>
@@ -120,6 +127,22 @@
       </tbody></table></div>
   </div>
 </section>
+<section class="sec sec--tight">
+  <div class="wrap">
+    <div class="sec__head">
+      <div class="sec__label">Об иллюстрациях</div>
+      <h2>Честно о фотографиях на сайте</h2>
+      
+    </div>
+    <div style="max-width:860px;margin:0 auto"><div class="note">
+      Часть иллюстраций на сайте — художественные визуализации, а не снимки наших объектов и не фото
+      конкретных автомобилей: терминалы, сервисные зоны, предметные кадры запчастей. Мы отмечаем это
+      прямо, потому что выдавать визуализацию за собственное фото — то же самое, что публиковать
+      выдуманные отзывы. Реальные снимки привезённых автомобилей и работ занимают их место по мере
+      появления, а фотографии в предложениях недели — всегда настоящие фото конкретной машины.
+      </div></div>
+  </div>
+</section>
 <section class="sec sec--deep sec--photo sec--bg-soft">
   <div class="sec__bg"><picture><source srcset="/konsulcar-demo/img/photo/art-dokumenty.webp" type="image/webp">
     <img src="/konsulcar-demo/img/photo/art-dokumenty.jpg" alt="" class=""
@@ -157,7 +180,7 @@
   <div class="cta-sec__bg"><picture><source srcset="/konsulcar-demo/img/photo/cta-bg.webp" type="image/webp">
     <img src="/konsulcar-demo/img/photo/cta-bg.jpg" alt="" class="cta-sec__img"
     loading="lazy"  decoding="async"></picture></div>
-  <div class="wrap" style="position:relative;z-index:2;"display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:clamp(24px,4vw,60px);align-items:center">
+  <div class="wrap cta-sec__in">
     <div>
       <div class="sec__label" style="justify-content:flex-start">Заявка</div>
       <h2>Обсудим вашу задачу</h2>
@@ -172,6 +195,12 @@
 <form class="form" data-form action="#" data-demo="1" method="post">
   <input type="hidden" name="source" value="О компании">
   <input type="hidden" name="page" value="">
+  <input type="hidden" name="t" value="" data-opened>
+  <!-- ловушка для ботов: человек этого поля не видит и не заполняет.
+       autocomplete=off обязателен — Яндекс.Браузер иначе автозаполняет и ломает отправку -->
+  <div aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden">
+    <label>Компания<input type="text" name="company_extra" tabindex="-1" autocomplete="off" value=""></label>
+  </div>
   <h3>Познакомимся?</h3>
   <p style="color:var(--muted);font-size:15px;margin-bottom:18px">Расскажите задачу — ответим, чем можем помочь и чем нет.</p>
   <div class="form__grid">
@@ -194,6 +223,8 @@
 </section>
 <style>
 .cta-sec{position:relative;overflow:hidden}
+.cta-sec__in{position:relative;z-index:2;display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:clamp(24px,4vw,60px);align-items:center}
 .cta-sec__bg{position:absolute;inset:0;z-index:0}
 .cta-sec__img{width:100%;height:100%;object-fit:cover;opacity:.5}
 .cta-sec__bg::after{content:"";position:absolute;inset:0;background:
@@ -248,6 +279,6 @@
   <a class="btn btn--ghost btn--sm" href="tel:+74951200001">Позвонить</a>
   <a class="btn btn--gold btn--sm" href="#zayavka">Оставить заявку</a>
 </div>
-<script src="/konsulcar-demo/js/site.js?v=13" defer></script>
+<script src="/konsulcar-demo/js/site.js?v=24" defer></script>
 </body>
 </html>
