@@ -22,7 +22,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Manrope:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="/konsulcar-demo/css/main.css?v=28">
+<link rel="stylesheet" href="/konsulcar-demo/css/main.css?v=31">
 <!-- Яндекс.Метрика подключится после получения номера счётчика -->
 </head>
 <body>
@@ -62,6 +62,8 @@
       <a href="/konsulcar-demo/o-kompanii/">О компании</a>
       <a href="/konsulcar-demo/kontakty/">Контакты</a>
     </nav>
+    <a class="hdr__cart" href="/konsulcar-demo/catalog/korzina/" hidden data-cart-link
+       aria-label="Список запроса по запчастям"><svg class="ic" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="13" cy="13" r="4.5"/><path d="M13 3v3M13 20v3M3 13h3M20 13h3M6.5 6.5l2 2M17.5 17.5l2 2M19.5 6.5l-2 2M8.5 17.5l-2 2"/><path d="M21 21l6 6M22.5 19.5a2 2 0 103 3"/></svg><span data-cart-count></span></a>
     <div class="hdr__tel">
       <a href="tel:+74951200001"><svg class="ic" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4l3 6-3 2c1 3 4 6 7 7l2-3 6 3-2 5c-9 1-19-9-18-18z"/></svg>+7 (495) 120-00-01</a>
       <span>Ежедневно с 9:00 до 21:00</span>
@@ -94,7 +96,7 @@
         <p class="lead">Сочинить двадцать отзывов с чужими аватарками — работа на полчаса, и именно
         поэтому такие блоки ничего не значат. Мы выбрали другой путь: показываем то, что можно
         проверить самостоятельно.</p>
-        <div style="margin-top:22px"><ul class="ul-check ul-check--2"><li><svg class="ic" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 17l6 6L26 9"/></svg><span>Отзыв просим оставить там, где мы не можем его отредактировать — на картах и внешних площадках</span></li><li><svg class="ic" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 17l6 6L26 9"/></svg><span>В архиве предложений видно реальные автомобили с ценами под ключ и сроками доставки</span></li><li><svg class="ic" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 17l6 6L26 9"/></svg><span>Аккредитация пункта техосмотра проверяется по единой базе — это не наше слово, а факт</span></li><li><svg class="ic" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 17l6 6L26 9"/></svg><span>Любой расчёт даём до оплаты: по нему видно, разбираемся ли мы в вопросе</span></li></ul></div>
+        <div style="margin-top:22px"><ul class="ul-check ul-check--2"><li><svg class="ic" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 17l6 6L26 9"/></svg><span>Отзыв просим оставить там, где мы не можем его отредактировать — на картах и внешних площадках</span></li><li><svg class="ic" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 17l6 6L26 9"/></svg><span>Архив предложений: снятые с публикации автомобили остаются на сайте с ценой и сроком — по нему видно, что и за сколько мы возим (сейчас там примеры оформления, реальные появятся с первыми сделками)</span></li><li><svg class="ic" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 17l6 6L26 9"/></svg><span>Аккредитация пункта техосмотра проверяется по единой базе — это не наше слово, а факт</span></li><li><svg class="ic" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 17l6 6L26 9"/></svg><span>Любой расчёт даём до оплаты: по нему видно, разбираемся ли мы в вопросе</span></li></ul></div>
         <div class="note" style="margin-top:22px">Когда появятся отзывы на внешних площадках,
         они будут здесь со ссылкой на источник — чтобы каждый мог открыть и убедиться, что отзыв настоящий.</div>
       </div>
@@ -113,7 +115,7 @@
     </div>
     <div class="grid grid--3">
         <a class="card" href="/konsulcar-demo/predlozheniya/"><span class="card__ic"><svg class="ic" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20l2 7h20l2-7"/><path d="M6 20V9h20v11"/><path d="M11 9V5h10v4"/><path d="M11 13h4M17 13h4M11 17h4M17 17h4"/></svg></span>
-          <h3>Архив предложений</h3><p>Привезённые автомобили с ценой под ключ и сроком доставки.</p>
+          <h3>Архив предложений</h3><p>Снятые предложения остаются с ценой и сроком: видно, что и за сколько мы возим.</p>
           <span class="card__more">Смотреть<svg class="ic" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 8l8 8-8 8"/></svg></span></a>
         <a class="card" href="/konsulcar-demo/uslugi/tehosmotr/"><span class="card__ic"><svg class="ic" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 3l11 4v9c0 6-4.6 10.7-11 13C9.6 26.7 5 22 5 16V7l11-4z"/><path d="M11 15.5l3.6 3.6L22 12"/></svg></span>
           <h3>Аккредитация ПТО</h3><p>Диагностическая карта попадает в единую базу — это проверяется.</p>
@@ -146,7 +148,7 @@
         </div>
       </div>
     <div><h4>Импорт автомобилей</h4><ul><li><a href="/konsulcar-demo/import-avto/">Импорт под ключ</a></li><li><a href="/konsulcar-demo/import-avto/koreya/">Из Кореи</a></li><li><a href="/konsulcar-demo/import-avto/kitay/">Из Китая</a></li><li><a href="/konsulcar-demo/import-avto/yaponiya/">Из Японии</a></li><li><a href="/konsulcar-demo/import-avto/usa/">Из США</a></li><li><a href="/konsulcar-demo/import-avto/oae/">Из ОАЭ</a></li></ul></div>
-    <div><h4>Услуги</h4><ul><li><a href="/konsulcar-demo/uslugi/postanovka-na-uchet/">Постановка на учёт</a></li><li><a href="/konsulcar-demo/uslugi/tehosmotr/">Технический осмотр</a></li><li><a href="/konsulcar-demo/uslugi/strahovanie/">Страхование</a></li><li><a href="/konsulcar-demo/uslugi/rusifikaciya/">Русификация</a></li><li><a href="/konsulcar-demo/uslugi/avtosignalizacii/">Автосигнализации</a></li><li><a href="/konsulcar-demo/uslugi/avtozvuk-shumoizolyaciya/">Автозвук и шумоизоляция</a></li><li><a href="/konsulcar-demo/uslugi/vkleyka-stekol/">Вклейка автостёкол</a></li></ul></div>
+    <div><h4>Услуги</h4><ul><li><a href="/konsulcar-demo/uslugi/postanovka-na-uchet/">Консультация по учёту</a></li><li><a href="/konsulcar-demo/uslugi/tehosmotr/">Технический осмотр</a></li><li><a href="/konsulcar-demo/uslugi/strahovanie/">Страхование</a></li><li><a href="/konsulcar-demo/uslugi/rusifikaciya/">Русификация</a></li><li><a href="/konsulcar-demo/uslugi/avtosignalizacii/">Автосигнализации</a></li><li><a href="/konsulcar-demo/uslugi/avtozvuk-shumoizolyaciya/">Автозвук и шумоизоляция</a></li><li><a href="/konsulcar-demo/uslugi/vkleyka-stekol/">Вклейка автостёкол</a></li></ul></div>
     <div><h4>Разделы</h4><ul><li><a href="/konsulcar-demo/catalog/">Каталог запчастей</a></li><li><a href="/konsulcar-demo/catalog/podbor-po-vin/">Подбор по VIN</a></li><li><a href="/konsulcar-demo/predlozheniya/">Предложения недели</a></li><li><a href="/konsulcar-demo/blog/">Журнал</a></li><li><a href="/konsulcar-demo/otzyvy/">Отзывы</a></li><li><a href="/konsulcar-demo/o-kompanii/">О компании</a></li><li><a href="/konsulcar-demo/kontakty/">Контакты</a></li></ul></div>
       <div>
         <h4>Контакты</h4>
@@ -172,6 +174,6 @@
   <a class="btn btn--gold btn--sm" href="/konsulcar-demo/kontakty/#zayavka">Оставить заявку</a>
 </div>
 <script>window.__phone="+7 (495) 120-00-01";window.__phoneHref="+74951200001";</script>
-<script src="/konsulcar-demo/js/site.js?v=30" defer></script>
+<script src="/konsulcar-demo/js/site.js?v=31" defer></script>
 </body>
 </html>

@@ -79,6 +79,14 @@ p{margin:0 0 1em}
 .hdr__tel a:hover{color:var(--gold-lt)}
 .hdr__tel .ic{width:15px;height:15px;color:var(--gold)}
 .hdr__tel span{font-size:11.5px;color:var(--muted-2)}
+.hdr__cart{position:relative;display:grid;place-items:center;width:44px;height:44px;flex:0 0 auto;
+  border:1px solid var(--line);border-radius:11px;color:var(--gold-lt);margin-left:auto}
+.hdr__cart:hover{background:rgba(201,162,39,.1);color:#fff}
+.hdr__cart .ic{width:20px;height:20px}
+.hdr__cart span{position:absolute;top:-6px;right:-6px;min-width:19px;height:19px;padding:0 5px;
+  border-radius:99px;background:var(--grad-gold);color:#150f04;font:700 11px/19px var(--ff-b);text-align:center}
+.hdr__cart[hidden]{display:none}
+.hdr__cart+.hdr__tel{margin-left:12px}
 .burger{display:none;width:44px;height:44px;border:1px solid var(--line);border-radius:10px;
   background:none;cursor:pointer;padding:0;align-items:center;justify-content:center;flex:0 0 auto}
 .burger i{display:block;width:19px;height:1.5px;background:var(--gold-lt);position:relative}

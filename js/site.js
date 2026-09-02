@@ -81,7 +81,9 @@
   function save(v) { try { localStorage.setItem(KEY, JSON.stringify(v)); } catch (e) {} }
   function badge() {
     var n = cart().length;
-    document.querySelectorAll('[data-cart-count]').forEach(function (el) { el.textContent = n ? '(' + n + ')' : ''; });
+    document.querySelectorAll('[data-cart-count]').forEach(function (el) { el.textContent = n ? String(n) : ''; });
+    // кнопка списка в шапке появляется только когда в списке что-то есть
+    document.querySelectorAll('[data-cart-link]').forEach(function (el) { el.hidden = !n; });
   }
   document.addEventListener('click', function (e) {
     var b = e.target.closest('[data-cart]');
