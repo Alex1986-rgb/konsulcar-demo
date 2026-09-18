@@ -139,6 +139,7 @@ textarea.inp{resize:none;min-height:86px}
 .kv{display:flex;justify-content:space-between;gap:10px;padding:7px 0;font-size:14px;border-bottom:1px dashed var(--soft)}
 .kv:last-child{border:0}
 .kv span{color:var(--muted)}
+.kv>b{white-space:nowrap}
 
 .chat{display:flex;flex-direction:column;gap:8px}
 .msg{max-width:80%;padding:9px 12px;border-radius:14px;font-size:14px;background:var(--ink-3)}

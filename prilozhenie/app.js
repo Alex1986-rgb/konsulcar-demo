@@ -143,6 +143,7 @@
         <b style="margin-top:8px">Kia Sorento из Кореи</b>
         <div class="prog" style="width:220px"><i style="width:43%"></i></div>
         <span class="sm mut">Этап 4 из 7 · морем во Владивосток</span></div></button>
+      <button class="card tap gl" data-go="calc" style="margin-top:10px"><div class="row"><span class="gold">${ic('ship')}</span><div class="sp"><b class="sm">Рассчитать авто по ссылке</b><div class="xs mut">Encar, Che168, Dongchedi → цена под ключ</div></div><span class="gold">›</span></div></button>
       ${o && o.st < 6 ? `<h3>Активный заказ</h3><button class="card tap gl" data-go="order">
         <div class="row"><b style="flex:1">${esc(svc(o.s).n)}</b>${statusPill(o.st)}</div>
         <div class="sm mut" style="margin-top:4px">${esc(o.car)}${o.pro ? ' · ' + esc(o.pro.n) : ''}</div></button>` : ''}
@@ -323,7 +324,8 @@
       <label class="field" style="margin-top:14px"><span>Марка и модель</span><input class="inp" value="Hyundai Palisade"></label>
       <label class="field"><span>Бюджет под ключ</span><div class="chips">${['до 3 млн', '3–4 млн', '4–5 млн', '5+ млн'].map((t, i) => `<button class="chip${i === 2 ? ' on' : ''}" data-chip>${t}</button>`).join('')}</div></label>
       <label class="field"><span>Кредит</span><div class="chips"><button class="chip on" data-chip>Не нужен</button><button class="chip" data-chip>Нужен</button></div></label>
-      <button class="btn" data-act="importLead">Получить расчёт</button>
+      <button class="btn" data-act="importLead">Получить подбор от менеджера</button>
+      <button class="btn gh" data-go="calc">Уже нашли машину? Рассчитать по ссылке</button>
       <p class="xs mut center" style="margin-top:8px">Менеджер пришлёт 2–3 варианта с ценой под ключ</p>`,
   });
 
@@ -339,6 +341,104 @@
       <button class="btn" data-act="importLead">Хочу такой</button>`,
     };
   };
+
+  // ── Калькулятор привоза ─────────────────────────────
+  // Ставки ДЕМОНСТРАЦИОННЫЕ. В рабочей версии курсы берутся из ЦБ + надбавка, расходы — из админки
+  // (экран «Ставки калькулятора»), а формула сверяется с калькулятором ТКС и настраивается на реальных сделках.
+  const RATES = {
+    fx: { KRW: 0.062, CNY: 13.1, EUR: 95 }, fxMarkup: 2, // курс, надбавка %
+    local: { KRW: 55000, CNY: 60000 },                     // по стране до порта, ₽
+    freight: { KRW: 95000, CNY: 110000 },                 // фрахт / доставка до границы
+    svh: 25000, broker: 45000, lab: 60000, truck: 140000, fee: 100000,
+  };
+  const LISTINGS = {
+    encar: { src: 'Encar', country: 'Корея', cur: 'KRW', url: 'fem.encar.com/cars/detail/39284751', t: 'Kia Sportage 2.0', y: 2023, age: 'u3', cc: 1999, hp: 150, km: '21 400 км', price: 26500000, img: 'offer-crossover-grey', fuel: 'бензин' },
+    che168: { src: 'Che168', country: 'Китай', cur: 'CNY', url: 'www.che168.com/dealer/481522/53120944.html', t: 'Haval Jolion 1.5T', y: 2024, age: 'u3', cc: 1497, hp: 150, km: '8 900 км', price: 92000, img: 'offer-crossover-dark', fuel: 'бензин' },
+    dongchedi: { src: 'Dongchedi', country: 'Китай', cur: 'CNY', url: 'www.dongchedi.com/usedcar/17840321', t: 'Chery Tiggo 7 Pro 1.5T', y: 2021, age: '35', cc: 1498, hp: 147, km: '46 000 км', price: 68000, img: 'offer-suv-black', fuel: 'бензин' },
+  };
+  const CUR = { KRW: '₩', CNY: '¥' };
+  const num = (n) => Math.round(n).toLocaleString('ru-RU').replace(/,/g, ' ');
+  // Пошлина для физлица по единым ставкам (ЕТС): до 3 лет — % от цены, но не меньше €/см³; старше — €/см³.
+  function duty(eur, cc, age) {
+    if (age === 'u3') {
+      const b = [[8500, .54, 2.5], [16700, .48, 3.5], [42300, .48, 5.5], [84500, .48, 7.5], [169000, .48, 15], [Infinity, .48, 20]].find((x) => eur <= x[0]);
+      return Math.max(eur * b[1], cc * b[2]);
+    }
+    const t = age === '35' ? [1.5, 1.7, 2.5, 2.7, 3.0, 3.6] : [3.0, 3.2, 3.5, 4.8, 5.0, 5.7];
+    const i = [1000, 1500, 1800, 2300, 3000, Infinity].findIndex((v) => cc <= v);
+    return cc * t[i];
+  }
+  const clearFee = (rub) => [[200000, 1067], [450000, 2134], [1200000, 4269], [2700000, 11746], [4200000, 16524], [5500000, 21344], [7000000, 27540], [Infinity, 30000]].find((x) => rub <= x[0])[1];
+  function calc(c) {
+    const fx = RATES.fx[c.cur] * (1 + RATES.fxMarkup / 100);
+    const car = c.price * fx;
+    const eur = car / RATES.fx.EUR;
+    const d = duty(eur, c.cc, c.age) * RATES.fx.EUR;
+    const util = c.hp > 160 ? null : (c.age === 'u3' ? 3400 : 5200);
+    const cf = clearFee(car);
+    const groups = [
+      ['Автомобиль', [[`Цена в объявлении: ${num(c.price)} ${CUR[c.cur]} × ${fx.toFixed(c.cur === 'KRW' ? 4 : 2)} ₽`, car]]],
+      ['Таможня (физлицо)', [['Пошлина по единой ставке', d], ['Утилизационный сбор', util], ['Сбор за таможенное оформление', cf]]],
+      ['Доставка и оформление', [[`Доставка по стране, экспорт (${c.country})`, RATES.local[c.cur]], ['Фрахт до Владивостока', RATES.freight[c.cur]], ['СВХ, выгрузка', RATES.svh], ['Таможенный брокер', RATES.broker], ['СБКТС и ЭПТС', RATES.lab], ['Автовоз до Москвы', RATES.truck], ['Услуги КонсулКар', RATES.fee]]],
+    ];
+    const total = groups.reduce((s, g) => s + g[1].reduce((a, r) => a + (r[1] || 0), 0), 0);
+    return { groups, total, util };
+  }
+  S.calc = { key: 'encar', manual: { cur: 'KRW', price: 26500000, cc: 1999, hp: 150, age: 'u3' } };
+
+  V.calc = () => ({
+    title: 'Расчёт под ключ', back: true,
+    body: `<p class="sm mut">Вставьте ссылку на объявление с Encar, Che168 или Dongchedi — посчитаем цену автомобиля в Москве с таможней и доставкой.</p>
+      <label class="field" style="margin-top:12px"><span>Ссылка на объявление</span><input class="inp" id="calcUrl" value="https://${LISTINGS[S.calc.key].url}"></label>
+      <div class="chips" style="margin-bottom:6px">${Object.entries(LISTINGS).map(([k, l]) => `<button class="chip${k === S.calc.key ? ' on' : ''}" data-act="calcPick" data-p="${k}">Пример: ${l.src}</button>`).join('')}</div>
+      <button class="btn" data-act="calcRun">Рассчитать</button>
+      <button class="btn gh" data-go="calcManual">Нет ссылки — ввести параметры</button>
+      <div class="card" style="margin-top:14px"><div class="row" style="align-items:flex-start"><span class="gold">${ic('shield')}</span><div class="sm">Цена предварительная. Итог и наличие подтвердит менеджер — он получит расчёт вместе с заявкой.</div></div></div>`,
+  });
+
+  V.calcManual = () => {
+    const m = S.calc.manual;
+    const ch = (k, v, t) => `<button class="chip${m[k] === v ? ' on' : ''}" data-act="calcSet" data-p="${k}:${v}">${t}</button>`;
+    return {
+      title: 'Параметры автомобиля', back: true,
+      body: `<div class="field"><span>Страна</span><div class="chips">${ch('cur', 'KRW', 'Корея, ₩')}${ch('cur', 'CNY', 'Китай, ¥')}</div></div>
+      <label class="field"><span>Цена в объявлении, ${CUR[m.cur]}</span><input class="inp" id="mPrice" inputmode="numeric" value="${m.price}"></label>
+      <div class="row" style="gap:8px"><label class="field sp"><span>Объём, см³</span><input class="inp" id="mCc" inputmode="numeric" value="${m.cc}"></label><label class="field sp"><span>Мощность, л.с.</span><input class="inp" id="mHp" inputmode="numeric" value="${m.hp}"></label></div>
+      <div class="field"><span>Возраст автомобиля</span><div class="chips">${ch('age', 'u3', 'до 3 лет')}${ch('age', '35', '3–5 лет')}${ch('age', 'o5', 'старше 5')}</div></div>
+      <button class="btn" data-act="calcManualRun">Рассчитать</button>`,
+    };
+  };
+
+  V.calcResult = () => {
+    const c = S.calc.car; const r = calc(c);
+    return {
+      title: 'Расчёт', back: true,
+      body: `<div class="card" style="padding:0;overflow:hidden">${c.img ? `<img src="${img(c.img)}" alt="" style="width:100%;height:140px;object-fit:cover">` : ''}<div style="padding:12px 14px">
+        <div class="row"><b class="sp">${esc(c.t)}${c.y ? ' ' + c.y : ''}</b>${c.src ? `<span class="pill ok">✓ объявление активно</span>` : ''}</div>
+        <div class="xs mut" style="margin-top:4px">${[c.src && c.src + ' · ' + c.country, c.cc + ' см³', c.hp + ' л.с.', c.km, c.fuel].filter(Boolean).join(' · ')}</div></div></div>
+      <div class="card gl"><span class="sm mut">Цена под ключ в Москве</span><div class="big gold" style="margin:6px 0 4px">≈ ${num(r.total)} ₽</div>
+        <span class="xs mut">предварительно, на 18.09.2026${r.util === null ? ' · без утильсбора' : ''}</span></div>
+      ${r.groups.map(([g, rows]) => `<h3>${g}</h3><div class="card">${rows.map(([t, v]) => `<div class="kv"><span>${t}</span><b>${v === null ? '<span class="mut">посчитает менеджер</span>' : num(v) + ' ₽'}</b></div>`).join('')}</div>`).join('')}
+      ${r.util === null ? '<p class="xs mut">Свыше 160 л.с. утильсбор считается по отдельной шкале — менеджер добавит его в итог.</p>' : ''}
+      <p class="xs mut" style="margin-top:6px">Курсы ₩ и ¥ — по ЦБ с надбавкой ${RATES.fxMarkup} %. Ставки в прототипе условные: в рабочей версии их ведёт менеджер, а формула сверяется с калькулятором ТКС.</p>
+      <button class="btn" data-act="calcOrder">Заказать этот автомобиль</button>
+      <button class="btn gh" data-go="calcManual">Изменить параметры</button>`,
+    };
+  };
+
+  V.rates = () => ({
+    title: 'Ставки калькулятора', back: true,
+    body: `<p class="sm mut" style="margin-bottom:12px">Менеджер меняет ставку — все расчёты в приложении сразу пересчитываются.</p>
+      <h3>Курсы</h3><div class="card">
+        <div class="kv"><span>Воны ₩ → ₽ (ЦБ)</span><b>${RATES.fx.KRW}</b></div><div class="kv"><span>Юани ¥ → ₽ (ЦБ)</span><b>${RATES.fx.CNY}</b></div>
+        <div class="kv"><span>Евро → ₽ (для пошлины)</span><b>${RATES.fx.EUR}</b></div>
+        <div class="kv"><span>Надбавка к курсу, %</span><input class="inp" style="width:90px;padding:6px 10px;text-align:right" data-rate="fxMarkup" value="${RATES.fxMarkup}"></div></div>
+      <h3>Расходы, ₽</h3><div class="card">${[['svh', 'СВХ, выгрузка'], ['broker', 'Таможенный брокер'], ['lab', 'СБКТС и ЭПТС'], ['truck', 'Автовоз до Москвы'], ['fee', 'Услуги КонсулКар']].map(([k, t]) => `<div class="kv"><span>${t}</span><input class="inp" style="width:110px;padding:6px 10px;text-align:right" data-rate="${k}" value="${RATES[k]}"></div>`).join('')}</div>
+      <h3>Сверка на сделках</h3><div class="card">
+        ${[['Kia Sportage 2023', '2 981 400', '2 948 000'], ['Hyundai Tucson 2022', '3 104 900', '3 150 000'], ['Haval Jolion 2024', '2 297 800', '2 270 000']].map(([t, a, b]) => `<div class="kv"><span>${t}</span><b class="sm">${a} / ${b}</b></div>`).join('')}
+        <p class="xs mut" style="margin-top:6px">калькулятор / фактическая сделка — цель: расхождение до 2–3 %</p></div>
+      <button class="btn" data-act="ratesSave">Сохранить ставки</button>`,
+  });
 
   V.garage = () => ({
     title: 'Гараж', right: `<button class="ib">+</button>`,
@@ -471,6 +571,7 @@
       <h3>Требует внимания</h3>
       <button class="card tap" data-tab="vetting"><div class="row"><span class="gold">${ic('shield')}</span><span class="sp sm">2 исполнителя ждут проверки</span></div></button>
       <button class="card tap" data-tab="disputes"><div class="row"><span class="gold">${ic('alert')}</span><span class="sp sm">1 открытый спор</span></div></button>
+      <button class="card tap" data-go="rates"><div class="row"><span class="gold">${ic('gear')}</span><span class="sp sm">Ставки калькулятора привоза</span></div></button>
       <p class="xs mut">Цифры демонстрационные.</p>`,
   });
 
@@ -527,6 +628,12 @@
 
   // ── действия
   const A = {
+    calcPick(k) { S.calc.key = k; render(); },
+    calcRun() { S.calc.car = LISTINGS[S.calc.key]; go('calcWait'); setTimeout(() => { if (top().s === 'calcWait') { stack().pop(); go('calcResult'); } }, 1300); },
+    calcSet(p) { const [k, v] = p.split(':'); keepManual(); S.calc.manual[k] = v; if (k === 'cur') S.calc.manual.price = v === 'KRW' ? 26500000 : 92000; render(); },
+    calcManualRun() { keepManual(); const m = S.calc.manual; S.calc.car = { t: 'Ваш автомобиль', cur: m.cur, price: +m.price, cc: +m.cc, hp: +m.hp, age: m.age, country: m.cur === 'KRW' ? 'Корея' : 'Китай' }; go('calcResult'); },
+    calcOrder() { toast('Заявка с расчётом отправлена менеджеру'); },
+    ratesSave() { document.querySelectorAll('[data-rate]').forEach((i) => { const v = parseFloat(String(i.value).replace(',', '.')); if (!isNaN(v)) RATES[i.dataset.rate] = v; }); toast('Ставки сохранены — расчёты пересчитаны'); },
     back() { if (S.role === 'client' && !S.logged) { S.stacks.login.pop(); render(); } else back(); },
     login() { S.logged = true; tab('home'); },
     logout() { S.logged = false; S.stacks.login = [{ s: 'login', p: {} }]; render(); },
@@ -556,6 +663,12 @@
     roleMenu() { const order = ['client', 'pro', 'admin']; role(order[(order.indexOf(S.role) + 1) % 3]); toast({ client: 'Роль: клиент', pro: 'Роль: исполнитель', admin: 'Роль: площадка' }[S.role]); },
   };
 
+  function keepManual() {
+    const g = (id) => { const e = document.getElementById(id); return e ? e.value.replace(/\s/g, '') : null; };
+    const m = S.calc.manual; if (g('mPrice') !== null) { m.price = g('mPrice'); m.cc = g('mCc'); m.hp = g('mHp'); }
+  }
+  V.calcWait = () => ({ title: 'Считаем', back: true, body: `<div class="spin"></div><p class="center">Читаем объявление ${esc(S.calc.car.src)}</p><p class="center sm mut" style="margin-top:6px">цена, год, объём, мощность · проверяем, что машина ещё продаётся</p>` });
+
   $app.addEventListener('click', (e) => {
     const el = e.target.closest('[data-go],[data-act],[data-tab],[data-chip],[data-role]');
     if (!el) return;
@@ -580,6 +693,7 @@
       ['Главная: услуги, привоз, предложения', () => { S.logged = true; tab('home'); }],
       ['Заказать услугу → отклики → оплата', () => { S.logged = true; tab('home'); go('service', { id: 'avtozvuk-shumoizolyaciya' }); }],
       ['Статус заказа, чат, приёмка и отзыв', () => { S.logged = true; if (!S.order || S.order.st < 3) S.order = { s: 'avtozvuk-shumoizolyaciya', car: 'Kia Sorento 2023', st: 3, pro: PROS[0] }; tab('orders'); go('order'); }],
+      ['Калькулятор привоза по ссылке', () => { S.logged = true; tab('home'); go('calc'); }],
       ['Привоз авто: этапы и документы', () => { S.logged = true; tab('home'); go('import'); }],
       ['Запчасти по VIN и корзина', () => { S.logged = true; tab('home'); go('parts'); }],
       ['Гараж: авто, ОСАГО, история', () => { S.logged = true; tab('garage'); }],
@@ -595,6 +709,7 @@
       ['Проверка исполнителей', () => tab('vetting')],
       ['Все заказы', () => tab('aorders')],
       ['Разбор спора', () => tab('disputes')],
+      ['Ставки калькулятора привоза', () => { tab('dash'); go('rates'); }],
     ],
   };
   // вкладка «Выплаты» исполнителя
