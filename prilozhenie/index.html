@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#0a0908">
+<title>КонсулКар — прототип приложения</title>
+<meta name="description" content="Кликабельный прототип мобильного приложения КонсулКар: клиент, исполнитель и площадка. Демо-данные.">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<div class="stage">
+  <aside class="intro">
+    <div class="intro__brand"><span class="mono">K</span><div><b>КонсулКар</b><small>прототип мобильного приложения</small></div></div>
+    <h1>Площадка автоуслуг: клиент, исполнитель, площадка</h1>
+    <p>Кликабельный прототип первого этапа из КП. Все экраны нажимаются, данные — демонстрационные: исполнители, цены и заказы придуманы для показа сценариев.</p>
+    <div class="roles" role="tablist" aria-label="Чьими глазами смотреть">
+      <button data-role="client" class="on">Клиент</button>
+      <button data-role="pro">Исполнитель</button>
+      <button data-role="admin">Площадка</button>
+    </div>
+    <div class="intro__h">Сценарии — нажмите, чтобы перейти</div>
+    <ol class="scen" id="scen"></ol>
+    <p class="intro__note">На телефоне прототип открывается во весь экран; роль переключается кнопкой ⇄ вверху.</p>
+  </aside>
+  <div class="phone">
+    <div class="phone__notch"></div>
+    <div class="app" id="app"></div>
+  </div>
+</div>
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
