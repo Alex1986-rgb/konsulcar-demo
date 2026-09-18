@@ -79,7 +79,7 @@
       { me: true, t: 'Отлично, буду вовремя. Сколько по времени займёт?', at: '09:14' },
       { me: false, t: 'Двери и пол — два дня. Вечером первого дня пришлю фото.', at: '09:15' },
     ],
-    leads: [], notif: true, bid: {}, jobStep: 1, proVerify: { a1: null, a2: null }, dispute: null,
+    leads: [], favs: [3, 6], subs: [], cmp: [], rem: {}, notif: true, bid: {}, jobStep: 1, proVerify: { a1: null, a2: null }, dispute: null,
   };
 
   const ROLES = {
@@ -157,6 +157,8 @@
   V.notif = () => ({
     title: 'Уведомления', back: true,
     body: [
+      ['car', 'Цена снизилась: Hyundai Santa Fe 2.2D', 'В избранном · под ключ дешевле примерно на 120 000 ₽', '18.09'],
+      ['search', 'По вашей подписке 2 новые машины', 'Корея · любой бюджет', '18.09'],
       ['ship', 'Kia Sorento погружен на судно', 'Фото погрузки и коносамент в разделе «Привоз»', '08.09'],
       ['doc', 'ОСАГО на Toyota Camry заканчивается 04.10', 'Продлить за 2 минуты — предложения трёх страховых', '15.09'],
       ['check', 'Диагностическая карта Camry — до 21.11', 'Аккредитованный ПТО, запись на удобное время', '14.09'],
@@ -345,48 +347,88 @@
   // ── Калькулятор привоза ─────────────────────────────
   // Ставки ДЕМОНСТРАЦИОННЫЕ. В рабочей версии курсы берутся из ЦБ + надбавка, расходы — из админки
   // (экран «Ставки калькулятора»), а формула сверяется с калькулятором ТКС и настраивается на реальных сделках.
+  // ── Калькулятор: те же правила, что на сайте (rules.js = копия build/data/calc-rules.js).
+  // Курсы в прототипе условные (на сайте — ЦБ на сегодня), ставки расходов — дефолты правил.
+  const CR = window.CALC_RULES;
   const RATES = {
-    fx: { KRW: 0.062, CNY: 13.1, EUR: 95 }, fxMarkup: 2, // курс, надбавка %
-    local: { KRW: 55000, CNY: 60000 },                     // по стране до порта, ₽
-    freight: { KRW: 95000, CNY: 110000 },                 // фрахт / доставка до границы
-    svh: 25000, broker: 45000, lab: 60000, truck: 140000, fee: 100000,
+    fx: { KRW: 0.062, CNY: 13.1, EUR: 95 }, fxMarkup: CR.defaults.fxMarkup,
+    local: { KRW: CR.defaults.local.koreya, CNY: CR.defaults.local.kitay },
+    freight: { KRW: CR.defaults.freight.koreya, CNY: CR.defaults.freight.kitay },
+    svh: CR.defaults.svh, broker: CR.defaults.broker, lab: CR.defaults.lab, truck: CR.defaults.truck, fee: CR.defaults.fee,
   };
   const LISTINGS = {
-    encar: { src: 'Encar', country: 'Корея', cur: 'KRW', url: 'fem.encar.com/cars/detail/39284751', t: 'Kia Sportage 2.0', y: 2023, age: 'u3', cc: 1999, hp: 150, km: '21 400 км', price: 26500000, img: 'offer-crossover-grey', fuel: 'бензин' },
-    che168: { src: 'Che168', country: 'Китай', cur: 'CNY', url: 'www.che168.com/dealer/481522/53120944.html', t: 'Haval Jolion 1.5T', y: 2024, age: 'u3', cc: 1497, hp: 150, km: '8 900 км', price: 92000, img: 'offer-crossover-dark', fuel: 'бензин' },
-    dongchedi: { src: 'Dongchedi', country: 'Китай', cur: 'CNY', url: 'www.dongchedi.com/usedcar/17840321', t: 'Chery Tiggo 7 Pro 1.5T', y: 2021, age: '35', cc: 1498, hp: 147, km: '46 000 км', price: 68000, img: 'offer-suv-black', fuel: 'бензин' },
+    encar: { src: 'Encar', country: 'Корея', cur: 'KRW', url: 'fem.encar.com/cars/detail/39284751', t: 'Kia Sportage 2.0', y: 2023, m: 3, cc: 1999, hp: 150, km: '21 400 км', price: 26500000, img: 'offer-crossover-grey', fuel: 'бензин' },
+    che168: { src: 'Che168', country: 'Китай', cur: 'CNY', url: 'www.che168.com/dealer/481522/53120944.html', t: 'Haval Jolion 1.5T', y: 2024, m: 4, cc: 1497, hp: 150, km: '8 900 км', price: 92000, img: 'offer-crossover-dark', fuel: 'бензин' },
+    dongchedi: { src: 'Dongchedi', country: 'Китай', cur: 'CNY', url: 'www.dongchedi.com/usedcar/17840321', t: 'Chery Tiggo 7 Pro 1.5T', y: 2021, m: 1, cc: 1498, hp: 147, km: '46 000 км', price: 68000, img: 'offer-suv-black', fuel: 'бензин' },
   };
   const CUR = { KRW: '₩', CNY: '¥' };
+  const SLUG = { KRW: 'koreya', CNY: 'kitay' };
   const mln = (n) => (n / 1e6).toFixed(2).replace('.', ',');
   const num = (n) => Math.round(n).toLocaleString('ru-RU').replace(/,/g, ' ');
-  // Пошлина для физлица по единым ставкам (ЕТС): до 3 лет — % от цены, но не меньше €/см³; старше — €/см³.
-  function duty(eur, cc, age) {
-    if (age === 'u3') {
-      const b = [[8500, .54, 2.5], [16700, .48, 3.5], [42300, .48, 5.5], [84500, .48, 7.5], [169000, .48, 15], [Infinity, .48, 20]].find((x) => eur <= x[0]);
-      return Math.max(eur * b[1], cc * b[2]);
-    }
-    const t = age === '35' ? [1.5, 1.7, 2.5, 2.7, 3.0, 3.6] : [3.0, 3.2, 3.5, 4.8, 5.0, 5.7];
-    const i = [1000, 1500, 1800, 2300, 3000, Infinity].findIndex((v) => cc <= v);
-    return cc * t[i];
+  const step = (t, x) => t.find((r) => r[0] === null || x <= r[0]) || t[t.length - 1];
+  const DAY = 86400000;
+  const ageCat = (made, at) => { const y = (at - made) / (365.25 * DAY); return y < 3 ? 'u3' : y <= 5 ? '35' : 'o5'; };
+  const dstr = (t) => new Date(t).toLocaleDateString('ru-RU');
+  function dutyRub(car, cc, cat) {
+    const E = RATES.fx.EUR;
+    if (cat === 'u3') { const [, sh, min] = step(CR.dutyUnder3, car / E); return Math.max(car * sh, cc * min * E); }
+    return cc * step(cat === '35' ? CR.duty3to5 : CR.dutyOver5, cc)[1] * E;
   }
-  const clearFee = (rub) => [[200000, 1231], [450000, 2462], [1200000, 4924], [2700000, 13541], [4200000, 18465], [5500000, 21344], [10000000, 49240], [Infinity, 73860]].find((x) => rub <= x[0])[1];
+  function utilRub(cc, hp, cat, ev) {
+    const old = cat !== 'u3';
+    if (ev) return hp <= CR.ev.utilMaxHp ? (old ? CR.util.over3 : CR.util.under3) : step(CR.ev.util, hp)[old ? 2 : 1];
+    if (hp <= CR.util.maxHp && cc <= CR.util.maxCc) return old ? CR.util.over3 : CR.util.under3;
+    if (cc <= 1000 || cc > 3000) return null;
+    return step(CR.utilComm[cc <= 2000 ? '2000' : '3000'], hp)[old ? 2 : 1];
+  }
   function calc(c, ent) {
-    const ul = ent === 'ul';
+    const ul = ent === 'ul', ev = c.fuel === 'электро';
     const fx = RATES.fx[c.cur] * (1 + RATES.fxMarkup / 100);
     const car = c.price * fx;
-    const eur = car / RATES.fx.EUR;
-    const d = ul ? null : duty(eur, c.cc, c.age) * RATES.fx.EUR;
-    const util = ul || c.hp > 160 || c.cc > 3000 ? null : (c.age === 'u3' ? 3400 : 5200);
-    const cf = clearFee(car);
+    const made = new Date(c.y, (c.m || 6) - 1, 1).getTime();
+    const at = Date.now() + (CR.defaults.transitDays[SLUG[c.cur]] || 45) * DAY;
+    const cat = ageCat(made, at);
+    const cf = step(CR.clearFee, car)[1];
+    const notes = []; let customs, d = null, util = null, hint = null;
+    if (ul) {
+      customs = [['Пошлина, акциз, НДС', null], ['Утилизационный сбор', null], ['Сбор за таможенное оформление', cf]];
+      notes.push('Для компании таможня считается иначе: пошлина, акциз и НДС. Менеджер пришлёт полный расчёт.');
+    } else if (ev) {
+      const du = car * CR.ev.duty, ex = c.hp * step(CR.ev.excise, c.hp)[1], vat = (car + du + ex) * CR.ev.vat;
+      util = utilRub(0, c.hp, cat, true);
+      customs = [['Пошлина 15 %', du], ['Акциз по мощности', ex], ['НДС 22 %', vat], ['Утилизационный сбор (электро)', util], ['Сбор за оформление', cf]];
+      notes.push('Электромобиль: пошлина 15 %, акциз и НДС 22 %. Мощность — 30-минутная из ЭПТС, не пиковая.');
+    } else {
+      d = dutyRub(car, c.cc, cat); util = utilRub(c.cc, c.hp, cat, false);
+      customs = [['Пошлина — ' + { u3: 'до 3 лет', 35: '3–5 лет', o5: 'старше 5 лет' }[cat] + ' на дату таможни', d], ['Утилизационный сбор', util], ['Сбор за таможенное оформление', cf]];
+      const lg = cat === 'u3' ? CR.util.under3 : CR.util.over3;
+      if (util === null) notes.push('Объём ' + (c.cc <= 1000 ? 'до 1 л' : 'больше 3 л') + ' — коммерческий утильсбор добавит менеджер.');
+      else if (util > CR.util.over3) notes.push('Мощность выше 160 л.с.: утильсбор ' + num(util) + ' ₽ вместо ' + num(lg) + ' ₽. Версия до 160 л.с. вышла бы дешевле на ' + num(util - lg) + ' ₽.');
+      for (const [yrs, win] of [[3, 200], [5, 60]]) {
+        const b = new Date(made); b.setFullYear(b.getFullYear() + yrs);
+        const delta = b.getTime() - at;
+        if (delta <= 0 || delta > win * DAY) continue;
+        const alt = ageCat(made, b.getTime() + DAY);
+        const au = util === null ? 0 : utilRub(c.cc, c.hp, alt, false);
+        const diff = Math.round(dutyRub(car, c.cc, alt) + au - d - (util || 0));
+        if (Math.abs(diff) < 10000) continue;
+        hint = { diff, text: diff < 0 ? `Машине исполнится ${yrs} года ${dstr(b)}. Если растаможить после этой даты — дешевле примерно на ${num(-diff)} ₽.`
+          : `Машине исполнится ${yrs} лет ${dstr(b)}. Если таможня сдвинется на после этой даты — дороже примерно на ${num(diff)} ₽.` };
+        break;
+      }
+    }
     const groups = [
       ['Автомобиль', [[`Цена в объявлении: ${num(c.price)} ${CUR[c.cur]} × ${fx.toFixed(c.cur === 'KRW' ? 4 : 2)} ₽`, car]]],
-      [ul ? 'Таможня (юрлицо)' : 'Таможня (физлицо)', ul ? [['Пошлина, акциз, НДС 20 %', null], ['Утилизационный сбор', null], ['Сбор за таможенное оформление', cf]] : [['Пошлина по единой ставке', d], ['Утилизационный сбор', util], ['Сбор за таможенное оформление', cf]]],
-      ['Доставка и оформление', [[`Доставка по стране, экспорт (${c.country})`, RATES.local[c.cur]], ['Фрахт до Владивостока', RATES.freight[c.cur]], ['СВХ, выгрузка', RATES.svh], ['Таможенный брокер', RATES.broker], ['СБКТС и ЭПТС', RATES.lab], ['Автовоз до Москвы', RATES.truck], ['Услуги КонсулКар', RATES.fee]]],
+      [ul ? 'Таможня (компания)' : 'Таможня (физлицо)', customs],
+      ['Доставка и оформление', [[`Расходы в стране (${c.country})`, RATES.local[c.cur]], ['Доставка до России', RATES.freight[c.cur]], ['СВХ, выгрузка', RATES.svh], ['Таможенный брокер', RATES.broker], ['СБКТС и ЭПТС', RATES.lab], ['Автовоз до Москвы', RATES.truck], ['Услуги КонсулКар', RATES.fee]]],
     ];
     const total = groups.reduce((s, g) => s + g[1].reduce((a, r) => a + (r[1] || 0), 0), 0);
-    return { groups, total, util, ul };
+    const mode = ul ? 'manual' : util === null && !ev ? 'from' : 'range';
+    const ageM = Math.floor((at - made) / (30.44 * DAY));
+    return { groups, total, util, ul, mode, notes, hint, comm: util > CR.util.over3 && !ev,
+      customsDate: dstr(at), ageText: `${Math.floor(ageM / 12)} г. ${ageM % 12} мес.` };
   }
-  S.calc = { ent: 'fl', key: 'encar', manual: { cur: 'KRW', price: 26500000, cc: 1999, hp: 150, age: 'u3' } };
+  S.calc = { ent: 'fl', key: 'encar', manual: { cur: 'KRW', price: 26500000, cc: 1999, hp: 150, y: 2023, m: 3, fuel: 'бензин' } };
 
   V.calc = () => ({
     title: 'Расчёт под ключ', back: true,
@@ -406,7 +448,8 @@
       body: `<div class="field"><span>Страна</span><div class="chips">${ch('cur', 'KRW', 'Корея, ₩')}${ch('cur', 'CNY', 'Китай, ¥')}</div></div>
       <label class="field"><span>Цена в объявлении, ${CUR[m.cur]}</span><input class="inp" id="mPrice" inputmode="numeric" value="${m.price}"></label>
       <div class="row" style="gap:8px"><label class="field sp"><span>Объём, см³</span><input class="inp" id="mCc" inputmode="numeric" value="${m.cc}"></label><label class="field sp"><span>Мощность, л.с.</span><input class="inp" id="mHp" inputmode="numeric" value="${m.hp}"></label></div>
-      <div class="field"><span>Возраст автомобиля</span><div class="chips">${ch('age', 'u3', 'до 3 лет')}${ch('age', '35', '3–5 лет')}${ch('age', 'o5', 'старше 5')}</div></div>
+      <div class="row" style="gap:8px"><label class="field sp"><span>Год выпуска</span><input class="inp" id="mY" inputmode="numeric" value="${m.y}"></label><label class="field sp"><span>Месяц</span><input class="inp" id="mM" inputmode="numeric" value="${m.m}"></label></div>
+      <div class="field"><span>Двигатель</span><div class="chips">${ch('fuel', 'бензин', 'Бензин / дизель / гибрид')}${ch('fuel', 'электро', 'Электро')}</div></div>
       <button class="btn" data-act="calcManualRun">Рассчитать</button>`,
     };
   };
@@ -419,13 +462,16 @@
       body: `<div class="card" style="padding:0;overflow:hidden">${c.img ? `<img src="${img(c.img)}" alt="" style="width:100%;height:140px;object-fit:cover">` : ''}<div style="padding:12px 14px">
         <div class="row"><b class="sp">${esc(c.t)}${c.y ? ' ' + c.y : ''}</b>${c.src ? `<span class="pill">данные объявления</span>` : ''}</div>
         <div class="xs mut" style="margin-top:4px">${[c.src && c.src + ' · ' + c.country, c.cc + ' см³', c.hp + ' л.с.', c.km, c.fuel].filter(Boolean).join(' · ')}</div></div></div>
-      <div class="card gl"><span class="sm mut">Цена под ключ в Москве</span><div class="big gold" style="margin:6px 0 4px">${r.util === null && !r.ul ? 'от ' + num(r.total) + ' ₽' : mln(r.total * 0.97) + '–' + mln(r.total * 1.03) + ' млн ₽'}</div>
-        <span class="xs mut">предварительно · ${r.ul ? 'без таможенных платежей' : r.util === null ? 'без утильсбора — он добавится' : 'вилка ±3 % · не является публичной офертой'}</span>
+      <div class="card gl"><span class="sm mut">Цена под ключ в Москве</span><div class="big gold" style="margin:6px 0 4px">${r.mode === 'manual' ? 'считает менеджер' : r.mode === 'from' ? 'от ' + num(r.total) + ' ₽' : mln(r.total * 0.97) + '–' + mln(r.total * 1.03) + ' млн ₽'}</div>
+        <span class="xs mut">предварительно · ${r.ul ? 'без таможенных платежей' : r.mode === 'from' ? 'без утильсбора — он добавится' : 'вилка ±3 % · не является публичной офертой'}</span>
+        <div class="xs mut" style="margin-top:6px">Таможня ≈ ${r.customsDate} · возраст на неё ${r.ageText}</div>
         <div class="chips" style="margin-top:10px">${ent('fl', 'Покупаю на себя')}${ent('ul', 'На компанию')}</div></div>
       ${r.groups.map(([g, rows]) => `<h3>${g}</h3><div class="card">${rows.map(([t, v]) => `<div class="kv"><span>${t}</span><b>${v === null ? '<span class="mut">посчитает менеджер</span>' : num(v) + ' ₽'}</b></div>`).join('')}</div>`).join('')}
-      ${r.ul ? '<p class="xs mut">Для компании таможня считается иначе: пошлина, акциз и НДС 20 % (его можно принять к вычету). Менеджер пришлёт полный расчёт.</p>' : r.util === null ? '<div class="card" style="border-color:rgba(217,139,58,.5)"><b class="sm" style="color:var(--warn)">⚠ Свыше 160 л.с. или 3 л — коммерческий утильсбор</b><p class="sm mut" style="margin-top:4px">В 2026 году это от 900 000 ₽ и выше вместо 3 400 ₽. Менеджер добавит точную сумму и подскажет версии этой модели до 160 л.с.</p></div>' : ''}
-      <p class="xs mut" style="margin-top:6px">Курсы ₩ и ¥ — по ЦБ с надбавкой ${RATES.fxMarkup} %. Ставки в прототипе условные: в рабочей версии их ведёт менеджер, а формула сверяется с калькулятором ТКС.</p>
+      ${r.hint ? `<div class="card" style="border-color:${r.hint.diff < 0 ? 'rgba(95,174,122,.5)' : 'rgba(217,139,58,.5)'}"><b class="sm" style="color:var(${r.hint.diff < 0 ? '--ok' : '--warn'})">${r.hint.diff < 0 ? '💡 Можно сэкономить на сроках' : '⚠ Не затягивать с таможней'}</b><p class="sm mut" style="margin-top:4px">${esc(r.hint.text)}</p></div>` : ''}
+      ${r.notes.map((n) => `<p class="xs mut" style="margin-top:6px">${esc(n)}</p>`).join('')}
+      <p class="xs mut" style="margin-top:6px">Формулы — те же, что в калькуляторе на konsulcar.ru (таможня и утильсбор 2026). Курсы в прототипе условные, на сайте — ЦБ на сегодня; расходы ведёт менеджер.</p>
       <button class="btn" data-act="calcOrder">Заказать этот автомобиль</button>
+      ${c.id !== undefined ? `<button class="btn gh" data-act="favT" data-p="${c.id}">${S.favs.includes(c.id) ? '♥ Слежу за ценой' : '♡ Следить за ценой'}</button>` : ''}
       <button class="btn gh" data-go="calcManual">Изменить параметры</button>`,
     };
   };
@@ -534,10 +580,81 @@
       title: c.t, back: true,
       body: `<div class="card"><div class="kv"><span>Год</span><b>${c.y}</b></div><div class="kv"><span>Госномер</span><b>${c.plate}</b></div><div class="kv"><span>VIN</span><b>${c.vin}</b></div><div class="kv"><span>ОСАГО</span><b>до ${c.osago}</b></div><div class="kv"><span>Диагностическая карта</span><b>${c.dk}</b></div></div>
       <div class="btns"><button class="btn gh" data-go="parts">${ic('parts')} Запчасти</button><button class="btn gh" data-go="service" data-p="strahovanie">${ic('doc')} Страховка</button></div>
+      <div class="btns"><button class="btn gh" data-go="vinCheck" data-p="${c.id}">${ic('search')} История по VIN</button><button class="btn gh" data-go="reminders" data-p="${c.id}">${ic('bell')} Напоминания</button></div>
       <h3>История</h3>
       <ol class="tl">${[['Техосмотр, аккредитованный ПТО', '21.11.2025'], ['Замена лобового стекла', '14.06.2025'], ['Русификация мультимедиа', '02.03.2025']].map(([t, d]) => `<li class="d"><i></i><b>${t}</b><span class="xs mut">${d} · акт и фото</span></li>`).join('')}</ol>`,
     };
   };
+
+  // ── Избранное, слежение за ценой, подписки на поиск, сравнение (по образцу Дрома, Авто.ру, CARSEEK) ─
+  const priceDrop = (id) => (id % 3 === 0 ? 120000 : 0); // демо: у части избранных цена снизилась
+  V.favs = () => {
+    const fav = CATALOG.filter((c) => S.favs.includes(c.id));
+    return {
+      title: 'Избранное и подписки', back: true,
+      body: `<h3>Слежу за ценой · ${fav.length}</h3>
+      ${fav.length ? fav.map((c) => { const r = calc(c); const drop = priceDrop(c.id); return `<div class="card row">
+        <img src="${img(c.img)}" alt="" style="width:64px;height:48px;border-radius:8px;object-fit:cover">
+        <button class="sp" style="text-align:left" data-act="catOpen" data-p="${c.id}"><b class="sm">${esc(c.t)} ${c.y}</b>
+        <div class="xs ${drop ? 'ok' : 'mut'}">${drop ? '↓ цена в объявлении снизилась · под ключ ≈ ' + num(r.total - drop) + ' ₽' : 'под ключ ≈ ' + num(r.total) + ' ₽ · без изменений'}</div></button>
+        <label class="xs mut" style="display:flex;gap:4px;align-items:center"><input type="checkbox" data-cmp="${c.id}"${S.cmp.includes(c.id) ? ' checked' : ''}>сравн.</label></div>`; }).join('')
+        : '<p class="sm mut">Нажмите «♡ Следить за ценой» в карточке машины — сообщим, если цена снизится или машину продадут.</p>'}
+      ${fav.length > 1 ? '<button class="btn gh" data-act="cmpGo">Сравнить отмеченные</button>' : ''}
+      <h3>Подписки на поиск · ${S.subs.length}</h3>
+      ${S.subs.length ? S.subs.map((f, i) => `<div class="card"><div class="row"><b class="sm sp">${f.c === 'all' ? 'Все страны' : f.c} · ${{ all: 'любой бюджет', 3: 'до 3 млн', 4: '3–4 млн', 5: '4+ млн' }[f.b]}</b><span class="pill g">${i === 0 ? '2 новых' : 'новых нет'}</span></div>
+        <div class="xs mut" style="margin-top:4px">Пришлём уведомление, когда на площадках появится подходящая машина</div></div>`).join('')
+        : '<p class="sm mut">В каталоге нажмите «🔔 Сообщать о новых» — и не придётся проверять площадки каждый день.</p>'}
+      <p class="xs mut">В рабочей версии площадки проверяются по расписанию через платную выгрузку данных; цена в объявлении и наличие обновляются так же.</p>`,
+    };
+  };
+  V.compare = () => {
+    const list = CATALOG.filter((c) => S.cmp.includes(c.id)).slice(0, 3);
+    const rows = [['Цена под ключ', (c, r) => '≈ ' + mln(r.total) + ' млн'], ['Страна', (c) => c.country], ['Год', (c) => c.y], ['Мощность', (c) => c.hp + ' л.с.'],
+      ['Утильсбор', (c, r) => r.util === null ? '—' : num(r.util) + ' ₽'], ['Пробег', (c) => c.km], ['Двигатель', (c) => c.fuel]];
+    const rs = list.map((c) => calc(c));
+    return {
+      title: 'Сравнение', back: true,
+      body: `<div class="card" style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12.5px">
+        <tr><td></td>${list.map((c) => `<th style="text-align:left;padding:4px 6px"><img src="${img(c.img)}" alt="" style="width:100%;height:50px;object-fit:cover;border-radius:6px"><div style="margin-top:4px">${esc(c.t)}</div></th>`).join('')}</tr>
+        ${rows.map(([t, f]) => `<tr style="border-top:1px solid var(--soft)"><td class="mut" style="padding:6px 4px">${t}</td>${list.map((c, i) => `<td style="padding:6px">${f(c, rs[i])}</td>`).join('')}</tr>`).join('')}
+      </table></div>
+      <p class="xs mut">Самая частая причина разницы в цене — утильсбор: версии до 160 л.с. дешевле на сотни тысяч рублей.</p>`,
+    };
+  };
+
+  // ── Гараж: история по VIN, напоминания ─
+  V.vinCheck = (id) => {
+    const c = CARS.find((x) => x.id === id);
+    return {
+      title: 'История по VIN', back: true,
+      body: `<div class="card gl"><b>${c.t} ${c.y}</b><div class="xs mut">VIN ${c.vin}</div></div>
+      <p class="sm mut">Отчёт готовит партнёрский сервис проверки. Что в него входит:</p>
+      <div class="card">${['ДТП и расчёты ремонта', 'Пробег по данным техосмотров и сервисов', 'Число владельцев и периоды владения', 'Залоги и ограничения', 'Работа в такси и лизинг', 'Отзывные кампании производителя'].map((t) => `<div class="row" style="padding:5px 0"><span class="gold" style="width:18px">${ic('check')}</span><span class="sm">${t}</span></div>`).join('')}</div>
+      <button class="btn" data-act="vinOrder">Заказать отчёт</button>
+      <p class="xs mut" style="margin-top:8px">Стоимость и срок отчёта назовёт менеджер. Для машин из-за рубежа до ввоза — отчёт по стране продажи (у Японии вместо VIN — номер кузова).</p>`,
+    };
+  };
+  V.reminders = (id) => {
+    const c = CARS.find((x) => x.id === id); const r = S.rem[id] = S.rem[id] || { osago: true, dk: true, to: true };
+    const sw = (k, t, d) => `<div class="li"><div class="sp"><b class="sm">${t}</b><div class="xs mut">${d}</div></div><button class="sw${r[k] ? ' on' : ''}" data-act="remT" data-p="${id}:${k}"></button></div>`;
+    return {
+      title: 'Напоминания', back: true,
+      body: `<p class="sm mut" style="margin-bottom:10px">${c.t} · даты вы вводите сами — из государственных баз мы их не берём.</p>
+      <div class="card">${sw('osago', 'ОСАГО', 'за 14 и за 3 дня до ' + c.osago)}${sw('dk', 'Диагностическая карта', c.dk === 'не требуется' ? 'пока не требуется' : 'за 30 дней до ' + c.dk)}${sw('to', 'Плановое ТО', 'каждые 12 месяцев или 10 000 км — от последнего визита')}</div>
+      <label class="field"><span>Пробег сейчас, км</span><input class="inp" value="${c.id === 'kia' ? '18 200' : '96 400'}" inputmode="numeric"></label>
+      <button class="btn" data-act="remSave">Сохранить</button>`,
+    };
+  };
+
+  // ── Запчасти: поиск по фото ─
+  V.partPhoto = () => ({
+    title: 'Найти по фото', back: true,
+    body: `<p class="sm mut">Не знаете артикул? Сфотографируйте деталь или табличку с номером — менеджер подберёт по VIN вашей машины.</p>
+      <div class="ph" style="margin:14px 0"><button class="add" style="width:100%;height:150px;font-size:15px">${ic('cam')} Сфотографировать</button></div>
+      <label class="field"><span>Что это за деталь (если знаете)</span><input class="inp" placeholder="Например, датчик под бампером"></label>
+      <button class="btn" data-act="photoSend">Отправить менеджеру</button>
+      <p class="xs mut" style="margin-top:8px">Ответ с вариантами и ценами придёт в чат. Автоматическое распознавание детали по фото мы не обещаем — подбирает человек.</p>`,
+  });
 
   // ── Каталог автомобилей (демо-выгрузка площадок) ─────
   const CATALOG = [
@@ -553,9 +670,10 @@
     ['dongchedi', 'Chery Tiggo 7 Pro 1.5T', 2021, '35', 1498, 147, '46 000', 68000, 'offer-suv-black'],
     ['dongchedi', 'Toyota RAV4 2.0', 2021, '35', 1987, 171, '58 000', 139000, 'offer-suv-white'],
     ['dongchedi', 'Honda CR-V 1.5T', 2022, 'u3', 1498, 193, '31 500', 152000, 'offer-crossover-dark'],
-  ].map(([src, t, y, age, cc, hp, km, price, im], i) => {
+    ['che168', 'BYD Song Plus EV', 2024, 'u3', 0, 150, '12 000', 135000, 'offer-crossover-grey', 'электро'],
+  ].map(([src, t, y, age, cc, hp, km, price, im, fuel], i) => {
     const l = LISTINGS[src];
-    return { id: i, src: l.src, country: l.country, cur: l.cur, t, y, age, cc, hp, km: km + ' км', price, img: im, fuel: 'бензин' };
+    return { id: i, src: l.src, country: l.country, cur: l.cur, t, y, m: 6, cc, hp, km: km + ' км', price, img: im, fuel: fuel || 'бензин' };
   });
   S.catF = { c: 'all', b: 'all' };
   V.cars = () => {
@@ -569,13 +687,14 @@
       title: 'Авто из-за рубежа', back: true,
       body: `<div class="chips" style="margin-bottom:8px">${ch('c', 'all', 'Все')}${ch('c', 'Корея', 'Корея')}${ch('c', 'Китай', 'Китай')}</div>
       <div class="chips" style="margin-bottom:12px">${ch('b', 'all', 'Любой бюджет')}${ch('b', '3', 'до 3 млн')}${ch('b', '4', '3–4 млн')}${ch('b', '5', '4+ млн')}</div>
+      <div class="btns" style="margin:-4px 0 10px"><button class="btn sm gh" data-act="subAdd">🔔 Сообщать о новых</button><button class="btn sm gh" data-go="favs">♡ Избранное · ${S.favs.length}</button></div>
       <p class="xs mut" style="margin-bottom:8px">${list.length} из 12 480 · обновлено сегодня в 06:00 · цены под ключ в Москве</p>
       ${list.map(({ c, r }) => `<button class="card tap" data-act="catOpen" data-p="${c.id}" style="padding:0;overflow:hidden;display:flex">
         <img src="${img(c.img)}" alt="" loading="lazy" style="width:118px;height:auto;object-fit:cover;flex:none">
         <div style="padding:10px 12px;min-width:0"><b class="sm">${esc(c.t)} ${c.y}</b>
-        <div class="xs mut">${c.km} · ${c.hp} л.с. · ${c.src}</div>
-        <div class="price gold" style="margin-top:6px">${r.util === null ? 'от ' : '≈ '}${num(r.total)} ₽</div>
-        ${r.util === null ? '<div class="xs" style="color:var(--warn)">⚠ >160 л.с.: + коммерческий утильсбор</div>' : ''}<div class="xs mut">в объявлении ${num(c.price)} ${CUR[c.cur]}</div></div></button>`).join('') || '<p class="mut">Под фильтр ничего не нашлось</p>'}
+        <div class="xs mut">${c.km} · ${c.hp} л.с.${c.fuel === 'электро' ? ' · электро' : ''} · ${c.src}</div>
+        <div class="price gold" style="margin-top:6px">${r.mode === 'from' ? 'от ' : '≈ '}${num(r.total)} ₽</div>
+        ${r.comm ? '<div class="xs" style="color:var(--warn)">>160 л.с.: коммерческий утильсбор учтён</div>' : ''}<div class="xs mut">в объявлении ${num(c.price)} ${CUR[c.cur]}</div></div></button>`).join('') || '<p class="mut">Под фильтр ничего не нашлось</p>'}
       <p class="xs mut">В рабочей версии каталог обновляется с площадок по расписанию, проданные машины снимаются автоматически.</p>`,
     };
   };
@@ -601,6 +720,7 @@
     right: `<button class="ib" data-go="cart">${ic('cart')}${S.parts.items.length ? '<span class="dot"></span>' : ''}</button>`,
     body: `<div class="card gl"><div class="row"><span class="gold">${ic('car')}</span><div class="sp"><b class="sm">${CARS[S.parts.car].t} ${CARS[S.parts.car].y}</b><div class="xs mut">VIN ${CARS[S.parts.car].vin} · из гаража</div></div><button class="btn sm gh" data-act="partsCar">Сменить</button></div></div>
       <div class="search" style="padding:6px 6px 6px 14px">${ic('search')}<input id="pq" class="sp" style="background:none;border:0;outline:0;padding:6px 0;min-width:0" placeholder="Деталь или артикул" value="${esc(S.parts.q)}"><button class="btn sm" data-act="partsSearch">Найти</button></div>
+      <button class="btn sm gh" style="margin-top:8px" data-go="partPhoto">${ic('cam')} Не знаю артикул — найти по фото</button>
       ${S.parts.q ? partsResults() : ''}
       <h3>Разделы</h3>
       <div class="grid">${NODES.map(([k, t, im]) => `<button class="tile" data-act="partsNode" data-p="${k}" style="${S.parts.node === k ? 'border-color:var(--gold)' : ''}"><img src="${img(im)}" alt="" loading="lazy"><span>${t}</span></button>`).join('')}</div>
@@ -654,7 +774,7 @@
       title: 'Заказ ' + o.n, back: true,
       body: `<div class="card gl">${o.items.map((x) => `<div class="kv"><span>${x.t} · ${x.b}</span><b>${rub(x.p)}</b></div>`).join('')}</div>
       <ol class="tl">${PST.map((t, i) => `<li class="${i < o.st ? 'd' : i === o.st ? 'c' : ''}"><i></i><b>${t}</b><span class="xs mut">${['только что', 'менеджер сверил по VIN', 'ожидаем 20.09', 'Щёлковское ш., 77, стр. 1'][i]}</span></li>`).join('')}</ol>
-      ${o.st < 3 ? '<button class="btn gh" data-act="partsNext">Демо: следующий статус</button>' : '<div class="card"><span class="sm">Детали на складе. Мастер по установке получил заказ и свяжется с вами.</span></div>'}`,
+      ${o.st < 3 ? '<button class="btn gh" data-act="partsNext">Демо: следующий статус</button>' : '<div class="card center"><b class="sm">Код для самовывоза</b><div style="margin:10px auto;width:120px;height:120px;background:repeating-conic-gradient(var(--text) 0 25%,var(--ink-2) 0 50%) 0 0/20px 20px;border:8px solid var(--text);border-radius:6px"></div><div class="xs mut">Покажите на выдаче · Щёлковское ш., 77, стр. 1 · QR в прототипе условный</div></div>'}`,
     };
   };
 
@@ -670,6 +790,7 @@
       <div class="card">
         <div class="li"><span class="sp sm">Уведомления о статусах</span><button class="sw${S.notif ? ' on' : ''}" data-act="notif"></button></div>
         <button class="li" data-go="garage"><span class="sp sm">Гараж: мои автомобили</span><span class="mut xs">2</span></button>
+        <button class="li" data-go="favs"><span class="sp sm">Избранное и подписки</span><span class="mut xs">${S.favs.length}</span></button>
         <button class="li" data-go="chats"><span class="sp sm">Чаты</span><span class="gold xs">2 новых</span></button>
         <div class="li"><span class="sp sm">Способы оплаты</span><span class="mut xs">•• 4418</span></div>
         <div class="li"><span class="sp sm">Бонусы</span><span class="gold xs">1 250</span></div>
@@ -816,7 +937,7 @@
       if (!k) { toast('Пока понимаем ссылки Encar, Che168 и Dongchedi. Или введите параметры вручную'); return; }
       S.calc.key = k; S.calc.car = LISTINGS[k]; go('calcWait'); setTimeout(() => { if (top().s === 'calcWait') { stack().pop(); go('calcResult'); } }, 1300); },
     calcSet(p) { const [k, v] = p.split(':'); keepManual(); S.calc.manual[k] = v; if (k === 'cur') S.calc.manual.price = v === 'KRW' ? 26500000 : 92000; render(); },
-    calcManualRun() { keepManual(); const m = S.calc.manual; S.calc.car = { t: 'Ваш автомобиль', cur: m.cur, price: +m.price, cc: +m.cc, hp: +m.hp, age: m.age, country: m.cur === 'KRW' ? 'Корея' : 'Китай' }; go('calcResult'); },
+    calcManualRun() { keepManual(); const m = S.calc.manual; S.calc.car = { t: 'Ваш автомобиль', cur: m.cur, price: +m.price, cc: +m.cc, hp: +m.hp, y: +m.y, m: +m.m, fuel: m.fuel, country: m.cur === 'KRW' ? 'Корея' : 'Китай' }; go('calcResult'); },
     calcOrder() { const c = S.calc.car; const r = calc(c, S.calc.ent); addLead({ t: `${c.t}${c.y ? ' ' + c.y : ''}`, total: r.ul ? null : r.total, src: c.src ? c.src + ' · ' + c.url : 'параметры вручную', car: c, ent: S.calc.ent }); },
     calcEnt(v) { S.calc.ent = v; render(); },
     ratesSave() { document.querySelectorAll('[data-rate]').forEach((i) => { const v = parseFloat(String(i.value).replace(',', '.')); if (!isNaN(v)) RATES[i.dataset.rate] = v; }); toast('Ставки сохранены — расчёты пересчитаны'); },
@@ -857,6 +978,13 @@
     partAdd(p) { const [n, i, j] = p.split(':'); const x = ITEMS[n][+i]; S.parts.items.push({ t: x.t, ...x.o[+j] }); toast('Добавлено в корзину'); },
     partDel(k) { S.parts.items.splice(+k, 1); render(); },
     partsNext() { S.partsOrder.st = Math.min(S.partsOrder.st + 1, 3); render(); },
+    favT(id) { id = +id; S.favs = S.favs.includes(id) ? S.favs.filter((x) => x !== id) : S.favs.concat(id); render(); toast(S.favs.includes(id) ? 'Сообщим, если цена изменится или машину продадут' : 'Убрано из избранного'); },
+    subAdd() { S.subs.push({ ...S.catF }); render(); toast('Подписка сохранена — пришлём новые машины под этот фильтр'); },
+    cmpGo() { S.cmp = [...document.querySelectorAll('[data-cmp]')].filter((i) => i.checked).map((i) => +i.dataset.cmp); if (S.cmp.length < 2) { toast('Отметьте хотя бы две машины'); return; } go('compare'); },
+    vinOrder() { toast('Заявка на отчёт у менеджера — он назовёт стоимость и срок'); },
+    remT(p) { const [id, k] = p.split(':'); S.rem[id][k] = !S.rem[id][k]; render(); },
+    remSave() { back(); toast('Напоминания сохранены'); },
+    photoSend() { back(); toast('Фото у менеджера — варианты придут в чат'); },
     catF(p) { const [k, v] = p.split(':'); S.catF[k] = v; render(); },
     catOpen(id) { S.calc.car = CATALOG[+id]; go('calcResult'); },
     notif() { S.notif = !S.notif; render(); },
@@ -869,7 +997,7 @@
 
   function keepManual() {
     const g = (id) => { const e = document.getElementById(id); return e ? e.value.replace(/\s/g, '') : null; };
-    const m = S.calc.manual; if (g('mPrice') !== null) { m.price = g('mPrice'); m.cc = g('mCc'); m.hp = g('mHp'); }
+    const m = S.calc.manual; if (g('mPrice') !== null) { m.price = g('mPrice'); m.cc = g('mCc'); m.hp = g('mHp'); m.y = g('mY'); m.m = g('mM'); }
   }
   V.calcWait = () => ({ title: 'Считаем', back: true, body: `<div class="spin"></div><p class="center">Читаем объявление ${esc(S.calc.car.src)}</p><p class="center sm mut" style="margin-top:6px">цена, год, объём, мощность · итоговую цену и наличие подтвердит менеджер</p>` });
 
@@ -904,10 +1032,11 @@
       ['Расчёт по ссылке → заявка менеджеру', () => { S.logged = true; tab('home'); go('calc'); }],
       ['Статус заявки на привоз', () => { S.logged = true; if (!S.leads.length) S.leads.push({ n: 'KC-2609-0153', who: 'Александр · +7 900 000-00-00', t: 'Kia Sportage 2.0 2023', total: calc(LISTINGS.encar).total, src: 'Encar · ' + LISTINGS.encar.url, car: LISTINGS.encar, ent: 'fl', st: 0, at: '10:05', seen: true }); tab('orders'); go('lead', { id: S.leads[0].n }); }],
       ['Привоз: этапы, документы, чат', () => { S.logged = true; tab('home'); go('import'); }],
+      ['Избранное, слежение за ценой, сравнение', () => { S.logged = true; tab('profile'); go('favs'); }],
       ['Запчасти по VIN: поиск, поставщики, заказ', () => { S.logged = true; tab('parts'); }],
       ['Заказать услугу → отклики → оплата', () => { S.logged = true; tab('home'); go('service', { id: 'avtozvuk-shumoizolyaciya' }); }],
       ['Статус услуги, чат, приёмка и отзыв', () => { S.logged = true; if (!S.order || S.order.st < 3) S.order = { s: 'avtozvuk-shumoizolyaciya', car: 'Kia Sorento 2023', st: 3, pro: PROS[0] }; tab('orders'); go('order'); }],
-      ['Гараж: авто, ОСАГО, история', () => { S.logged = true; tab('profile'); go('garage'); }],
+      ['Гараж: история по VIN, напоминания', () => { S.logged = true; tab('profile'); go('garage'); go('car', { id: 'cam' }); }],
     ],
     pro: [
       ['Лента заказов рядом', () => tab('feed')],
