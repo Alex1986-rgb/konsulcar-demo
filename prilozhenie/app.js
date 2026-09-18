@@ -63,12 +63,6 @@
     { t: 'Kia Mohave 2022', c: 'Из Кореи', p: 4350000, img: 'offer-suv-black', sp: ['3.0 дизель', '7 мест', '31 000 км'] },
     { t: 'Hyundai Palisade 2023', c: 'Из Кореи', p: 4900000, img: 'offer-suv-white', sp: ['3.8 бензин', 'Полный привод', '19 000 км'] },
   ];
-  const PARTS = [
-    { t: 'Колодки тормозные передние', b: 'Brembo', a: 'P 30 055', p: 6420, d: 'сегодня', img: 'cat-tormoznaya-sistema' },
-    { t: 'Колодки тормозные передние', b: 'Hyundai/Kia (оригинал)', a: '58101P2A00', p: 9870, d: '1–2 дня', img: 'cat-tormoznaya-sistema' },
-    { t: 'Фильтр масляный', b: 'MANN-FILTER', a: 'W 811/80', p: 890, d: 'сегодня', img: 'cat-filtry' },
-    { t: 'Стойка стабилизатора передняя', b: 'CTR', a: 'CLKK-40', p: 1740, d: '1–2 дня', img: 'cat-podveska' },
-  ];
   const FEED = [
     { id: 'f1', s: 'avtozvuk-shumoizolyaciya', car: 'Kia Sorento 2023', area: 'Восточное Измайлово · 3,2 км', when: 'На этой неделе', d: 'Шумоизоляция дверей и пола, в салоне гул на трассе.', resp: 2 },
     { id: 'f2', s: 'detailing', car: 'BMW X5 2021', area: 'Гольяново · 4,1 км', when: 'Завтра', d: 'Полировка кузова и керамика перед продажей.', resp: 4 },
@@ -85,13 +79,13 @@
       { me: true, t: 'Отлично, буду вовремя. Сколько по времени займёт?', at: '09:14' },
       { me: false, t: 'Двери и пол — два дня. Вечером первого дня пришлю фото.', at: '09:15' },
     ],
-    cart: 0, notif: true, bid: {}, jobStep: 1, proVerify: { a1: null, a2: null }, dispute: null,
+    leads: [], notif: true, bid: {}, jobStep: 1, proVerify: { a1: null, a2: null }, dispute: null,
   };
 
   const ROLES = {
-    client: { tabs: [['home', 'Главная', 'home'], ['orders', 'Заказы', 'list'], ['garage', 'Гараж', 'car'], ['chats', 'Чаты', 'chat'], ['profile', 'Профиль', 'user']] },
+    client: { tabs: [['home', 'Главная', 'home'], ['cars', 'Авто', 'car'], ['parts', 'Запчасти', 'parts'], ['orders', 'Заказы', 'list'], ['profile', 'Профиль', 'user']] },
     pro: { tabs: [['feed', 'Заказы', 'feed'], ['jobs', 'Мои работы', 'list'], ['payouts', 'Выплаты', 'wallet'], ['pprofile', 'Профиль', 'user']] },
-    admin: { tabs: [['dash', 'Сводка', 'chart'], ['vetting', 'Проверка', 'shield'], ['aorders', 'Заказы', 'list'], ['disputes', 'Споры', 'alert']] },
+    admin: { tabs: [['dash', 'Сводка', 'chart'], ['aleads', 'Привоз', 'ship'], ['vetting', 'Проверка', 'shield'], ['aorders', 'Заказы', 'list'], ['disputes', 'Споры', 'alert']] },
   };
 
   const stack = () => { const k = S.role + ':' + curTab(); return (S.stacks[k] = S.stacks[k] || [{ s: curTab(), p: {} }]); };
@@ -136,25 +130,27 @@
     const chips = ['srv-import', ...SVC.map((x) => x.s)];
     const o = S.order;
     return {
-      title: 'Добрый день!', right: `<button class="ib" data-go="notif">${ic('bell')}<span class="dot"></span></button>`,
-      body: `<button class="search" data-go="parts">${ic('search')}Запчасть по VIN, услуга или артикул</button>
-      <button class="hero" data-go="import"><img src="${img('art-port-pogruzka')}" alt=""><div>
+      title: 'Добрый день!', right: `<button class="ib" data-go="chats" aria-label="Чаты">${ic('chat')}<span class="dot"></span></button><button class="ib" data-go="notif" aria-label="Уведомления">${ic('bell')}${S.leads.some((l) => l.st === 1 && !l.seen) ? '<span class="dot"></span>' : ''}</button>`,
+      body: `<button class="search" data-tab="parts">${ic('search')}Запчасть по VIN, артикулу или названию</button>
+      <div class="duo">
+        <button class="dtile" data-tab="cars"><img src="${img('srv-import')}" alt=""><div><b>Привоз авто</b><span>Корея, Китай, Япония, США, ОАЭ · цена под ключ</span></div></button>
+        <button class="dtile" data-tab="parts"><img src="${img('srv-zapchasti')}" alt=""><div><b>Запчасти</b><span>по VIN · оригинал и аналоги · сегодня</span></div></button>
+      </div>
+      <button class="card tap gl" data-go="calc"><div class="row"><span class="gold">${ic('ship')}</span><div class="sp"><b class="sm">Нашли машину? Рассчитайте по ссылке</b><div class="xs mut">Encar, Che168, Dongchedi → цена в Москве</div></div><span class="gold">›</span></div></button>
+      <button class="hero" data-go="import" style="min-height:130px"><img src="${img('art-port-pogruzka')}" alt=""><div>
         <span class="pill g">Ваш автомобиль в пути</span>
         <b style="margin-top:8px">Kia Sorento из Кореи</b>
         <div class="prog" style="width:220px"><i style="width:43%"></i></div>
         <span class="sm mut">Этап 4 из 7 · морем во Владивосток</span></div></button>
-      <button class="card tap gl" data-go="calc" style="margin-top:10px"><div class="row"><span class="gold">${ic('ship')}</span><div class="sp"><b class="sm">Рассчитать авто по ссылке</b><div class="xs mut">Encar, Che168, Dongchedi → цена под ключ</div></div><span class="gold">›</span></div></button>
-      <div class="btns"><button class="btn gh" data-go="cars">${ic('car')} Каталог авто</button><button class="btn gh" data-go="parts">${ic('parts')} Запчасти</button></div>
-      ${o && o.st < 6 ? `<h3>Активный заказ</h3><button class="card tap gl" data-go="order">
+      ${S.leads.length ? `<button class="card tap" data-go="lead" data-p="${S.leads[0].n}"><div class="row"><span class="gold">${ic('doc')}</span><div class="sp"><b class="sm">Заявка ${S.leads[0].n}</b><div class="xs mut">${esc(S.leads[0].t)}</div></div>${leadPill(S.leads[0])}</div></button>` : ''}
+      ${o && o.st < 6 ? `<button class="card tap gl" data-go="order">
         <div class="row"><b style="flex:1">${esc(svc(o.s).n)}</b>${statusPill(o.st)}</div>
         <div class="sm mut" style="margin-top:4px">${esc(o.car)}${o.pro ? ' · ' + esc(o.pro.n) : ''}</div></button>` : ''}
-      <h3>Услуги</h3>
-      <div class="grid">${chips.map((s) => s === 'srv-import'
-        ? `<button class="tile" data-go="importNew"><img src="${img('srv-import')}" alt=""><span>Привоз авто под ключ</span></button>`
-        : `<button class="tile" data-go="service" data-p="${s}"><img src="${img(svc(s).img)}" alt="" loading="lazy"><span>${esc(svc(s).t)}</span></button>`).join('')}</div>
       <h3>Предложения недели</h3>
       <div class="hs">${OFFERS.map((f, i) => `<button class="offer" data-go="offer" data-p="${i}"><img src="${img(f.img)}" alt="" loading="lazy"><div>
-        <b>${esc(f.t)}</b><span class="xs mut">${f.c} · под ключ</span><div class="price gold" style="margin-top:6px">${rub(f.p)}</div></div></button>`).join('')}</div>`,
+        <b>${esc(f.t)}</b><span class="xs mut">${f.c} · под ключ</span><div class="price gold" style="margin-top:6px">${rub(f.p)}</div></div></button>`).join('')}</div>
+      <h3>Автоуслуги</h3>
+      <div class="grid">${chips.filter((s) => s !== 'srv-import' && s !== 'zapchasti').map((s) => `<button class="tile" data-go="service" data-p="${s}"><img src="${img(svc(s).img)}" alt="" loading="lazy"><span>${esc(svc(s).t)}</span></button>`).join('')}</div>`,
     };
   };
 
@@ -295,7 +291,8 @@
     const o = S.order;
     return {
       title: 'Мои заказы',
-      body: `${o ? `<h3>Текущие</h3><button class="card tap gl" data-go="order"><div class="row"><b class="sp">${esc(svc(o.s).n)}</b>${statusPill(o.st)}</div><div class="sm mut" style="margin-top:4px">${esc(o.car)}</div></button>` : `<div class="card"><p class="sm mut">Активных заказов нет. Выберите услугу на главной — исполнители откликнутся с ценой.</p><button class="btn" data-go="newOrder" data-p="avtozvuk-shumoizolyaciya">Создать заказ</button></div>`}
+      body: `${S.leads.length ? `<h3>Заявки на привоз</h3>${S.leads.map((l) => `<button class="card tap${l.st === 1 && !l.seen ? ' gl' : ''}" data-go="lead" data-p="${l.n}"><div class="row"><b class="sp sm">${esc(l.t)}</b>${leadPill(l)}</div><div class="xs mut" style="margin-top:4px">${l.n}${l.final ? ' · ' + num(l.final) + ' ₽' : l.total ? ' · ≈ ' + num(l.total) + ' ₽' : ''}</div></button>`).join('')}` : ''}
+      ${o ? `<h3>Текущие</h3><button class="card tap gl" data-go="order"><div class="row"><b class="sp">${esc(svc(o.s).n)}</b>${statusPill(o.st)}</div><div class="sm mut" style="margin-top:4px">${esc(o.car)}</div></button>` : `<div class="card"><p class="sm mut">Активных заказов нет. Выберите услугу на главной — исполнители откликнутся с ценой.</p><button class="btn" data-go="newOrder" data-p="avtozvuk-shumoizolyaciya">Создать заказ</button></div>`}
       ${S.partsOrder ? `<button class="card tap gl" data-go="partsOrder"><div class="row"><span class="gold">${ic('parts')}</span><b class="sp">Запчасти · ${S.partsOrder.n}</b><span class="pill g">${PST[S.partsOrder.st]}</span></div></button>` : ''}
       <button class="card tap" data-go="import"><div class="row"><span class="gold">${ic('ship')}</span><b class="sp">Привоз Kia Sorento</b><span class="pill g">этап 4 из 7</span></div></button>
       <h3>Завершённые</h3>
@@ -341,7 +338,7 @@
       <p class="sm mut">Цена под ключ в РФ: автомобиль, доставка, таможенное оформление и документы</p>
       <div class="chips" style="margin:12px 0">${f.sp.map((s) => `<span class="pill">${s}</span>`).join('')}</div>
       <div class="card"><div class="kv"><span>Проверка истории по VIN</span><b class="ok">до выкупа</b></div><div class="kv"><span>Фотоотчёт</span><b>перед отправкой</b></div><div class="kv"><span>Русификация мультимедиа</span><b>входит</b></div></div>
-      <button class="btn" data-act="importLead">Хочу такой</button>`,
+      <button class="btn" data-act="importLead" data-p="${i}">Хочу такой</button>`,
     };
   };
 
@@ -372,22 +369,23 @@
     return cc * t[i];
   }
   const clearFee = (rub) => [[200000, 1067], [450000, 2134], [1200000, 4269], [2700000, 11746], [4200000, 16524], [5500000, 21344], [7000000, 27540], [Infinity, 30000]].find((x) => rub <= x[0])[1];
-  function calc(c) {
+  function calc(c, ent) {
+    const ul = ent === 'ul';
     const fx = RATES.fx[c.cur] * (1 + RATES.fxMarkup / 100);
     const car = c.price * fx;
     const eur = car / RATES.fx.EUR;
-    const d = duty(eur, c.cc, c.age) * RATES.fx.EUR;
-    const util = c.hp > 160 ? null : (c.age === 'u3' ? 3400 : 5200);
+    const d = ul ? null : duty(eur, c.cc, c.age) * RATES.fx.EUR;
+    const util = ul || c.hp > 160 ? null : (c.age === 'u3' ? 3400 : 5200);
     const cf = clearFee(car);
     const groups = [
       ['Автомобиль', [[`Цена в объявлении: ${num(c.price)} ${CUR[c.cur]} × ${fx.toFixed(c.cur === 'KRW' ? 4 : 2)} ₽`, car]]],
-      ['Таможня (физлицо)', [['Пошлина по единой ставке', d], ['Утилизационный сбор', util], ['Сбор за таможенное оформление', cf]]],
+      [ul ? 'Таможня (юрлицо)' : 'Таможня (физлицо)', ul ? [['Пошлина, акциз, НДС 20 %', null], ['Утилизационный сбор', null], ['Сбор за таможенное оформление', cf]] : [['Пошлина по единой ставке', d], ['Утилизационный сбор', util], ['Сбор за таможенное оформление', cf]]],
       ['Доставка и оформление', [[`Доставка по стране, экспорт (${c.country})`, RATES.local[c.cur]], ['Фрахт до Владивостока', RATES.freight[c.cur]], ['СВХ, выгрузка', RATES.svh], ['Таможенный брокер', RATES.broker], ['СБКТС и ЭПТС', RATES.lab], ['Автовоз до Москвы', RATES.truck], ['Услуги КонсулКар', RATES.fee]]],
     ];
     const total = groups.reduce((s, g) => s + g[1].reduce((a, r) => a + (r[1] || 0), 0), 0);
-    return { groups, total, util };
+    return { groups, total, util, ul };
   }
-  S.calc = { key: 'encar', manual: { cur: 'KRW', price: 26500000, cc: 1999, hp: 150, age: 'u3' } };
+  S.calc = { ent: 'fl', key: 'encar', manual: { cur: 'KRW', price: 26500000, cc: 1999, hp: 150, age: 'u3' } };
 
   V.calc = () => ({
     title: 'Расчёт под ключ', back: true,
@@ -413,16 +411,18 @@
   };
 
   V.calcResult = () => {
-    const c = S.calc.car; const r = calc(c);
+    const c = S.calc.car; const r = calc(c, S.calc.ent);
+    const ent = (v, t) => `<button class="chip${S.calc.ent === v ? ' on' : ''}" data-act="calcEnt" data-p="${v}">${t}</button>`;
     return {
       title: 'Расчёт', back: true,
       body: `<div class="card" style="padding:0;overflow:hidden">${c.img ? `<img src="${img(c.img)}" alt="" style="width:100%;height:140px;object-fit:cover">` : ''}<div style="padding:12px 14px">
         <div class="row"><b class="sp">${esc(c.t)}${c.y ? ' ' + c.y : ''}</b>${c.src ? `<span class="pill ok">✓ объявление активно</span>` : ''}</div>
         <div class="xs mut" style="margin-top:4px">${[c.src && c.src + ' · ' + c.country, c.cc + ' см³', c.hp + ' л.с.', c.km, c.fuel].filter(Boolean).join(' · ')}</div></div></div>
       <div class="card gl"><span class="sm mut">Цена под ключ в Москве</span><div class="big gold" style="margin:6px 0 4px">≈ ${num(r.total)} ₽</div>
-        <span class="xs mut">предварительно, на 18.09.2026${r.util === null ? ' · без утильсбора' : ''}</span></div>
+        <span class="xs mut">предварительно · ${r.ul ? 'без таможенных платежей' : r.util === null ? 'без утильсбора' : 'расчёт действует 24 часа'}</span>
+        <div class="chips" style="margin-top:10px">${ent('fl', 'Покупаю на себя')}${ent('ul', 'На компанию')}</div></div>
       ${r.groups.map(([g, rows]) => `<h3>${g}</h3><div class="card">${rows.map(([t, v]) => `<div class="kv"><span>${t}</span><b>${v === null ? '<span class="mut">посчитает менеджер</span>' : num(v) + ' ₽'}</b></div>`).join('')}</div>`).join('')}
-      ${r.util === null ? '<p class="xs mut">Свыше 160 л.с. утильсбор считается по отдельной шкале — менеджер добавит его в итог.</p>' : ''}
+      ${r.ul ? '<p class="xs mut">Для компании таможня считается иначе: пошлина, акциз и НДС 20 % (его можно принять к вычету). Менеджер пришлёт полный расчёт.</p>' : r.util === null ? '<p class="xs mut">Свыше 160 л.с. утильсбор считается по отдельной шкале — менеджер добавит его в итог.</p>' : ''}
       <p class="xs mut" style="margin-top:6px">Курсы ₩ и ¥ — по ЦБ с надбавкой ${RATES.fxMarkup} %. Ставки в прототипе условные: в рабочей версии их ведёт менеджер, а формула сверяется с калькулятором ТКС.</p>
       <button class="btn" data-act="calcOrder">Заказать этот автомобиль</button>
       <button class="btn gh" data-go="calcManual">Изменить параметры</button>`,
@@ -443,8 +443,83 @@
       <button class="btn" data-act="ratesSave">Сохранить ставки</button>`,
   });
 
+  // ── Заявки на привоз: клиент видит статус, менеджер — расчёт ─
+  const LST = ['Менеджер проверяет', 'Цена подтверждена', 'Договор на подписи', 'Машина продана'];
+  const leadPill = (l) => `<span class="pill ${l.st === 1 ? 'ok' : l.st === 3 ? 'w' : 'g'}">${LST[l.st]}</span>`;
+  const ADM_LEADS = [
+    { n: 'KC-2609-0149', who: 'Ирина · +7 9•• •••-12-40', t: 'Hyundai Tucson 2.0 2022', total: 3104900, src: 'Encar', st: 0, at: '11:42' },
+    { n: 'KC-2609-0147', who: 'Олег · +7 9•• •••-77-05', t: 'Haval Jolion 1.5T 2024', total: 2297800, src: 'Che168', st: 1, final: 2270000, at: '09:15' },
+  ];
+  function addLead(o) {
+    const n = 'KC-2609-01' + (53 + S.leads.length);
+    S.leads.unshift(Object.assign({ n, who: 'Александр · +7 900 000-00-00', st: 0, at: 'только что', seen: true }, o));
+    go('leadDone', { id: n });
+  }
+  const findLead = (n) => S.leads.find((x) => x.n === n) || ADM_LEADS.find((x) => x.n === n);
+  function badge(k) {
+    if (S.role === 'client' && k === 'orders' && S.leads.some((l) => l.st === 1 && !l.seen)) return '<span class="badge">1</span>';
+    if (S.role === 'admin' && k === 'aleads') { const c = S.leads.concat(ADM_LEADS).filter((l) => l.st === 0).length; return c ? `<span class="badge">${c}</span>` : ''; }
+    return '';
+  }
+  const calcRows = (r, empty) => r.groups.flatMap((g) => g[1]).map(([t, v]) => `<div class="kv"><span>${t}</span><b>${v === null ? empty : num(v) + ' ₽'}</b></div>`).join('');
+
+  V.leadDone = (n) => {
+    const l = findLead(n);
+    return {
+      title: '', back: false,
+      body: `<div class="okc">${ic('check')}</div><div class="center big">Заявка ${l.n}</div>
+      <p class="center mut" style="margin:8px 0 18px">${esc(l.t)}${l.total ? ' · ≈ ' + num(l.total) + ' ₽' : ''}</p>
+      <div class="card"><b class="sm">Что дальше</b>
+        <ol class="tl" style="margin-top:10px"><li class="c"><i></i><b>Менеджер проверит, что машина продаётся</b><span class="xs mut">и пересчитает по сегодняшнему курсу</span></li>
+        <li><i></i><b>Пришлёт подтверждённую цену</b><span class="xs mut">уведомлением в приложении</span></li>
+        <li><i></i><b>Договор и оплата</b><span class="xs mut">после вашего согласия</span></li></ol>
+        <p class="xs mut">Обычно отвечаем за 15 минут, ежедневно с 9:00 до 21:00.</p></div>
+      <div class="btns"><button class="btn gh" data-tab="orders">Мои заявки</button><button class="btn" data-go="chatMgr">Чат с менеджером</button></div>`,
+    };
+  };
+
+  V.lead = (n) => {
+    const l = findLead(n); l.seen = true;
+    const r = l.car ? calc(l.car, l.ent) : null;
+    const steps = ['Заявка отправлена', 'Цена и наличие подтверждены', 'Договор', 'Оплата и выкуп'];
+    const cls = (i) => (l.st === 3 ? (i === 0 ? 'd' : '') : i <= l.st ? 'd' : i === l.st + 1 ? 'c' : '');
+    return {
+      title: 'Заявка ' + l.n, back: true, right: `<button class="ib" data-go="chatMgr">${ic('chat')}</button>`,
+      body: `<div class="card gl"><div class="row"><b class="sp">${esc(l.t)}</b>${leadPill(l)}</div><div class="xs mut" style="margin-top:4px">${esc(l.src)}</div></div>
+      <div class="card"><div class="kv"><span>Предварительная цена</span><b>${l.total ? num(l.total) + ' ₽' : 'считает менеджер'}</b></div>
+        ${l.final ? `<div class="kv"><span>Подтверждённая цена</span><b class="gold">${num(l.final)} ₽</b></div>` : ''}</div>
+      <ol class="tl">${steps.map((t, i) => `<li class="${cls(i)}"><i></i><b>${t}</b></li>`).join('')}</ol>
+      ${l.st === 0 ? '<p class="sm mut">Менеджер проверяет объявление и считает по сегодняшнему курсу. Как только подтвердит — придёт уведомление.</p><p class="xs mut" style="margin-top:6px">Демо: переключитесь на роль «Площадка» → вкладка «Привоз» и ответьте от лица менеджера.</p>' : ''}
+      ${l.st === 1 ? `<button class="btn" data-act="leadContract" data-p="${l.n}">Согласен — прислать договор</button><button class="btn gh" data-go="chatMgr">Обсудить с менеджером</button>` : ''}
+      ${l.st === 2 ? '<div class="card"><span class="sm">Договор отправлен. После подписания и предоплаты начнётся выкуп — этапы появятся в разделе «Привоз».</span></div>' : ''}
+      ${l.st === 3 ? '<div class="card"><span class="sm">Эту машину уже продали. Менеджер подобрал три похожих — они в чате.</span></div>' : ''}
+      ${r ? `<h3>Расчёт</h3><div class="card">${calcRows(r, '—')}</div>` : ''}`,
+    };
+  };
+
+  V.aleads = () => ({
+    title: 'Заявки на привоз',
+    body: `<p class="sm mut" style="margin-bottom:12px">Приходят из калькулятора, каталога и предложений недели — сразу с предварительным расчётом.</p>
+      ${S.leads.concat(ADM_LEADS).map((l) => `<button class="card tap${l.st === 0 ? ' gl' : ''}" data-go="alead" data-p="${l.n}"><div class="row"><b class="sp sm">${l.n}</b>${leadPill(l)}</div>
+        <div class="sm" style="margin-top:4px">${esc(l.t)}</div><div class="xs mut">${esc(l.who)} · ${l.at}${l.total ? ' · ≈ ' + num(l.total) + ' ₽' : ''}</div></button>`).join('')}`,
+  });
+
+  V.alead = (n) => {
+    const l = findLead(n); const r = l.car ? calc(l.car, l.ent) : null;
+    return {
+      title: l.n, back: true,
+      body: `<div class="card gl"><b>${esc(l.t)}</b><div class="xs mut" style="margin-top:4px">${esc(l.who)}</div><div class="xs mut">${esc(l.src)}</div>
+        ${l.car && l.car.src ? '<div class="pill ok" style="margin-top:8px">✓ объявление активно · проверено 2 мин назад</div>' : ''}</div>
+      ${r ? `<div class="card">${calcRows(r, '<span class="mut">вручную</span>')}<div class="kv"><span>Итого по калькулятору</span><b class="gold">${r.ul ? '—' : num(r.total) + ' ₽'}</b></div></div>` : `<div class="card"><div class="kv"><span>Предварительно</span><b>${l.total ? num(l.total) + ' ₽' : '—'}</b></div></div>`}
+      ${l.st === 0 ? `<label class="field"><span>Итоговая цена для клиента, ₽</span><input class="inp" id="finalPrice" inputmode="numeric" value="${l.total ? Math.round(l.total / 1000) * 1000 : ''}"></label>
+        <button class="btn" data-act="leadConfirm" data-p="${l.n}">Подтвердить клиенту</button>
+        <button class="btn gh" data-act="leadSold" data-p="${l.n}">Машина продана — предложить похожие</button>` : `<div class="card"><span class="sm">Статус: ${LST[l.st]}${l.final ? ' · ' + num(l.final) + ' ₽' : ''}</span></div>`}
+      <p class="xs mut" style="margin-top:8px">В рабочей версии заявка одновременно создаёт сделку в amoCRM с расчётом в примечании.</p>`,
+    };
+  };
+
   V.garage = () => ({
-    title: 'Гараж', right: `<button class="ib">+</button>`,
+    title: 'Гараж', back: true, right: `<button class="ib">+</button>`,
     body: CARS.map((c) => `<button class="card tap" data-go="car" data-p="${c.id}" style="padding:0;overflow:hidden">
       <img src="${img(c.img)}" alt="" style="width:100%;height:120px;object-fit:cover"><div style="padding:12px 14px">
       <div class="row"><b class="sp">${c.t} ${c.y}</b><span class="pill">${c.plate}</span></div>
@@ -519,12 +594,13 @@
       { t: 'Фильтр салона', img: 'cat-filtry', o: [OFFER('Hyundai/Kia', '97133P2000', 'оригинал', 1960, '1–2 дня', 'Поставщик'), OFFER('Bosch', '1 987 435 612', 'аналог', 1120, 'сегодня', 'Склад в Москве')] },
     ],
   };
-  S.parts = { node: 'brake', items: [] };
+  S.parts = { node: 'brake', items: [], q: '', car: 0 };
   V.parts = () => ({
     title: 'Запчасти', back: true,
     right: `<button class="ib" data-go="cart">${ic('cart')}${S.parts.items.length ? '<span class="dot"></span>' : ''}</button>`,
-    body: `<div class="card gl"><div class="row"><span class="gold">${ic('car')}</span><div class="sp"><b class="sm">Kia Sorento 2023</b><div class="xs mut">VIN KNARH81E••••••4821 · из гаража</div></div><button class="btn sm gh">Сменить</button></div></div>
-      <div class="search">${ic('search')}Деталь, артикул или VIN</div>
+    body: `<div class="card gl"><div class="row"><span class="gold">${ic('car')}</span><div class="sp"><b class="sm">${CARS[S.parts.car].t} ${CARS[S.parts.car].y}</b><div class="xs mut">VIN ${CARS[S.parts.car].vin} · из гаража</div></div><button class="btn sm gh" data-act="partsCar">Сменить</button></div></div>
+      <div class="search" style="padding:6px 6px 6px 14px">${ic('search')}<input id="pq" class="sp" style="background:none;border:0;outline:0;padding:6px 0;min-width:0" placeholder="Деталь или артикул" value="${esc(S.parts.q)}"><button class="btn sm" data-act="partsSearch">Найти</button></div>
+      ${S.parts.q ? partsResults() : ''}
       <h3>Разделы</h3>
       <div class="grid">${NODES.map(([k, t, im]) => `<button class="tile" data-act="partsNode" data-p="${k}" style="${S.parts.node === k ? 'border-color:var(--gold)' : ''}"><img src="${img(im)}" alt="" loading="lazy"><span>${t}</span></button>`).join('')}</div>
       <h3>${NODES.find((n) => n[0] === S.parts.node)[1]}</h3>
@@ -536,11 +612,20 @@
       <div class="card"><div class="row"><span class="gold">${ic('parts')}</span><span class="sm sp">Установка у проверенного мастера — одним заказом с запчастью</span></div></div>`,
   });
 
+  function partsResults() {
+    const q = S.parts.q.toLowerCase().replace(/\s/g, '');
+    const res = [];
+    Object.entries(ITEMS).forEach(([n, arr]) => arr.forEach((x, i) => {
+      if ((x.t + x.o.map((o) => o.a + o.b).join(' ')).toLowerCase().replace(/\s/g, '').includes(q)) res.push([n, i, x]);
+    }));
+    return `<div class="row" style="margin:12px 0 4px"><b class="sp sm">Найдено: ${res.length}</b><button class="chip" data-act="partsClear">× сбросить</button></div>
+      ${res.map(([n, i, x]) => `<button class="card tap" data-go="partItem" data-p="${n}:${i}"><b class="sm">${x.t}</b><div class="xs mut">от ${rub(Math.min(...x.o.map((o) => o.p)))} · ${x.o.length} предложения</div></button>`).join('') || '<p class="sm mut">Ничего не нашли — пришлите фото детали менеджеру, подберём по VIN.</p>'}`;
+  }
   V.partItem = (p) => {
     const [n, i] = p.split(':'); const x = ITEMS[n][+i];
     return {
       title: x.t, back: true,
-      body: `<p class="sm mut" style="margin-bottom:10px">Подходит к Kia Sorento 2023 по VIN · предложения от склада и поставщиков</p>
+      body: `<p class="sm mut" style="margin-bottom:10px">Подходит к ${CARS[S.parts.car].t} ${CARS[S.parts.car].y} по VIN · предложения от склада и поставщиков</p>
       ${x.o.map((o, j) => `<div class="card"><div class="row"><b class="sp">${o.b}</b><span class="pill ${o.kind === 'оригинал' ? 'g' : ''}">${o.kind}</span></div>
         <div class="xs mut" style="margin:3px 0 8px">${o.a} · ${o.sup}</div>
         <div class="row"><span class="price sp">${rub(o.p)}</span><span class="xs ${o.stock === 'сегодня' ? 'ok' : 'mut'}">${o.stock === 'сегодня' ? 'в наличии сегодня' : o.stock}</span>
@@ -573,7 +658,7 @@
   };
 
   V.chats = () => ({
-    title: 'Чаты',
+    title: 'Чаты', back: true,
     body: [['ТШ', 'Студия «Тишина»', S.chat[S.chat.length - 1].t, 'chat'], ['КК', 'Менеджер по привозу', 'Фото погрузки загрузил в документы.', 'chatMgr'], ['КК', 'Поддержка КонсулКар', 'Здравствуйте! Чем помочь?', 'chatMgr']]
       .map(([a, n, t, g]) => `<button class="li" data-go="${g}"><div class="av">${a}</div><div class="sp" style="min-width:0"><b class="sm">${n}</b><div class="xs mut" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(t)}</div></div></button>`).join(''),
   });
@@ -583,7 +668,8 @@
     body: `<div class="row" style="margin-bottom:14px"><div class="av" style="width:58px;height:58px">АК</div><div><b>Александр</b><div class="sm mut">+7 900 000-00-00</div></div></div>
       <div class="card">
         <div class="li"><span class="sp sm">Уведомления о статусах</span><button class="sw${S.notif ? ' on' : ''}" data-act="notif"></button></div>
-        <button class="li" data-go="garage"><span class="sp sm">Мои автомобили</span><span class="mut xs">2</span></button>
+        <button class="li" data-go="garage"><span class="sp sm">Гараж: мои автомобили</span><span class="mut xs">2</span></button>
+        <button class="li" data-go="chats"><span class="sp sm">Чаты</span><span class="gold xs">2 новых</span></button>
         <div class="li"><span class="sp sm">Способы оплаты</span><span class="mut xs">•• 4418</span></div>
         <div class="li"><span class="sp sm">Бонусы</span><span class="gold xs">1 250</span></div>
         <button class="li" data-go="chatMgr"><span class="sp sm">Поддержка</span></button>
@@ -655,13 +741,14 @@
     title: 'Сводка площадки',
     body: `<div class="chips" style="margin-bottom:12px"><button class="chip on" data-chip>Неделя</button><button class="chip" data-chip>Месяц</button></div>
       <div class="kpi">
-        <div class="card"><span class="xs mut">Заказов</span><b>148</b><span class="xs ok">+18 %</span></div>
-        <div class="card"><span class="xs mut">Откликов на заказ</span><b>3,4</b><span class="xs mut">цель ≥ 3</span></div>
-        <div class="card"><span class="xs mut">Средний чек</span><b>21 800 ₽</b></div>
-        <div class="card"><span class="xs mut">Комиссия</span><b class="gold">322 640 ₽</b></div>
+        <div class="card"><span class="xs mut">Заявок на привоз</span><b>23</b><span class="xs ok">+4 к прошлой</span></div>
+        <div class="card"><span class="xs mut">Заказов запчастей</span><b>64</b><span class="xs mut">чек 7 900 ₽</span></div>
+        <div class="card"><span class="xs mut">Заказов услуг</span><b>148</b><span class="xs mut">3,4 отклика</span></div>
+        <div class="card"><span class="xs mut">Комиссия площадки</span><b class="gold">322 640 ₽</b></div>
       </div>
       <div class="card" style="margin-top:10px"><span class="xs mut">Заказы по дням</span><div class="bars">${[14, 19, 22, 17, 25, 28, 23].map((v) => `<i style="height:${v * 3.4}%"></i>`).join('')}</div></div>
       <h3>Требует внимания</h3>
+      <button class="card tap gl" data-tab="aleads"><div class="row"><span class="gold">${ic('ship')}</span><span class="sp sm">${S.leads.concat(ADM_LEADS).filter((l) => l.st === 0).length} заявки на привоз ждут подтверждения цены</span></div></button>
       <button class="card tap" data-tab="vetting"><div class="row"><span class="gold">${ic('shield')}</span><span class="sp sm">2 исполнителя ждут проверки</span></div></button>
       <button class="card tap" data-tab="disputes"><div class="row"><span class="gold">${ic('alert')}</span><span class="sp sm">1 открытый спор</span></div></button>
       <button class="card tap" data-go="rates"><div class="row"><span class="gold">${ic('gear')}</span><span class="sp sm">Ставки калькулятора привоза</span></div></button>
@@ -715,17 +802,22 @@
       ${v.bare ? '' : `<div class="top">${v.back && canBack ? `<button class="ib" data-act="back" aria-label="Назад">${ic('back')}</button>` : ''}<h2>${esc(v.title || '')}</h2>${v.right || ''}<button class="ib fab" data-act="roleMenu" aria-label="Сменить роль">${ic('swap')}</button></div>`}
       <div class="body">${v.body}</div>
       ${v.compose ? `<div class="compose"><input class="inp" id="msg" placeholder="Сообщение"><button class="ib" data-act="send">${ic('send')}</button></div>` : ''}
-      ${tabsOn ? `<nav class="tabs">${tabs.map(([k, n, i]) => `<button class="${k === ct ? 'on' : ''}" data-tab="${k}">${ic(i)}${n}${k === 'chats' ? '<span class="badge">2</span>' : ''}</button>`).join('')}</nav>` : ''}`;
+      ${tabsOn ? `<nav class="tabs">${tabs.map(([k, n, i]) => `<button class="${k === ct ? 'on' : ''}" data-tab="${k}">${ic(i)}${n}${badge(k)}</button>`).join('')}</nav>` : ''}`;
     const b = $app.querySelector('.body'); if (b) b.scrollTop = 0;
   }
 
   // ── действия
   const A = {
     calcPick(k) { S.calc.key = k; render(); },
-    calcRun() { S.calc.car = LISTINGS[S.calc.key]; go('calcWait'); setTimeout(() => { if (top().s === 'calcWait') { stack().pop(); go('calcResult'); } }, 1300); },
+    calcRun() {
+      const u = (document.getElementById('calcUrl') || {}).value || '';
+      const k = Object.keys(LISTINGS).find((x) => u.toLowerCase().includes(x));
+      if (!k) { toast('Пока понимаем ссылки Encar, Che168 и Dongchedi. Или введите параметры вручную'); return; }
+      S.calc.key = k; S.calc.car = LISTINGS[k]; go('calcWait'); setTimeout(() => { if (top().s === 'calcWait') { stack().pop(); go('calcResult'); } }, 1300); },
     calcSet(p) { const [k, v] = p.split(':'); keepManual(); S.calc.manual[k] = v; if (k === 'cur') S.calc.manual.price = v === 'KRW' ? 26500000 : 92000; render(); },
     calcManualRun() { keepManual(); const m = S.calc.manual; S.calc.car = { t: 'Ваш автомобиль', cur: m.cur, price: +m.price, cc: +m.cc, hp: +m.hp, age: m.age, country: m.cur === 'KRW' ? 'Корея' : 'Китай' }; go('calcResult'); },
-    calcOrder() { toast('Заявка с расчётом отправлена менеджеру'); },
+    calcOrder() { const c = S.calc.car; const r = calc(c, S.calc.ent); addLead({ t: `${c.t}${c.y ? ' ' + c.y : ''}`, total: r.ul ? null : r.total, src: c.src ? c.src + ' · ' + c.url : 'параметры вручную', car: c, ent: S.calc.ent }); },
+    calcEnt(v) { S.calc.ent = v; render(); },
     ratesSave() { document.querySelectorAll('[data-rate]').forEach((i) => { const v = parseFloat(String(i.value).replace(',', '.')); if (!isNaN(v)) RATES[i.dataset.rate] = v; }); toast('Ставки сохранены — расчёты пересчитаны'); },
     back() { if (S.role === 'client' && !S.logged) { S.stacks.login.pop(); render(); } else back(); },
     login() { S.logged = true; tab('home'); },
@@ -745,10 +837,22 @@
       S.chat.push({ me: true, t: i.value.trim(), at: '09:20' }); render();
       setTimeout(() => { if (top().s === 'chat') { S.chat.push({ me: false, t: 'Принято 👍', at: '09:21' }); render(); } }, 900);
     },
-    importLead() { toast('Заявка отправлена менеджеру. Расчёт придёт в чат'); },
-    addCart() { S.cart++; render(); toast('Добавлено в корзину'); },
+    importLead(i) {
+      if (i !== undefined) { const f = OFFERS[+i]; return addLead({ t: f.t, total: f.p, src: 'Предложение недели' }); }
+      const m = document.querySelector('#app input.inp'); addLead({ t: 'Подбор: ' + (m ? m.value : 'автомобиль'), total: null, src: 'Заявка на подбор' });
+    },
+    leadConfirm(n) {
+      const l = findLead(n);
+      const v = parseInt(String((document.getElementById('finalPrice') || {}).value || '').replace(/\D/g, ''), 10);
+      l.final = v || l.total; l.st = 1; l.seen = false; render(); toast('Клиент получил уведомление с подтверждённой ценой');
+    },
+    leadSold(n) { findLead(n).st = 3; render(); toast('Клиенту отправлены 3 похожих машины'); },
+    leadContract(n) { findLead(n).st = 2; render(); toast('Договор отправлен на подпись'); },
     buy() { S.partsOrder = { n: 'KC-2609-0152', items: S.parts.items.slice(), st: 0 }; S.parts.items = []; const k = S.role + ':' + curTab(); S.stacks[k] = [{ s: curTab(), p: {} }, { s: 'partsOrder', p: {} }]; render(); toast('Заказ принят. Менеджер подтвердит наличие'); },
     partsNode(k) { S.parts.node = k; render(); },
+    partsSearch() { S.parts.q = (document.getElementById('pq') || {}).value || ''; render(); },
+    partsClear() { S.parts.q = ''; render(); },
+    partsCar() { S.parts.car = (S.parts.car + 1) % CARS.length; render(); toast('Подбор по VIN ' + CARS[S.parts.car].t); },
     partAdd(p) { const [n, i, j] = p.split(':'); const x = ITEMS[n][+i]; S.parts.items.push({ t: x.t, ...x.o[+j] }); toast('Добавлено в корзину'); },
     partDel(k) { S.parts.items.splice(+k, 1); render(); },
     partsNext() { S.partsOrder.st = Math.min(S.partsOrder.st + 1, 3); render(); },
@@ -783,20 +887,26 @@
       go(el.dataset.go, { id: el.dataset.p });
     }
   });
-  $app.addEventListener('keydown', (e) => { if (e.key === 'Enter' && e.target.id === 'msg') A.send(); });
+  $app.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter') return;
+    if (e.target.id === 'msg') A.send();
+    if (e.target.id === 'pq') A.partsSearch();
+    if (e.target.id === 'calcUrl') A.calcRun();
+  });
 
   // ── сценарии слева
   const SCEN = {
     client: [
       ['Вход по номеру телефона', () => { S.logged = false; S.stacks.login = [{ s: 'login', p: {} }]; render(); }],
-      ['Главная: услуги, привоз, предложения', () => { S.logged = true; tab('home'); }],
+      ['Главная: привоз, запчасти, услуги', () => { S.logged = true; tab('home'); }],
+      ['Каталог авто с ценой под ключ', () => { S.logged = true; tab('cars'); }],
+      ['Расчёт по ссылке → заявка менеджеру', () => { S.logged = true; tab('home'); go('calc'); }],
+      ['Статус заявки на привоз', () => { S.logged = true; if (!S.leads.length) S.leads.push({ n: 'KC-2609-0153', who: 'Александр · +7 900 000-00-00', t: 'Kia Sportage 2.0 2023', total: calc(LISTINGS.encar).total, src: 'Encar · ' + LISTINGS.encar.url, car: LISTINGS.encar, ent: 'fl', st: 0, at: '10:05', seen: true }); tab('orders'); go('lead', { id: S.leads[0].n }); }],
+      ['Привоз: этапы, документы, чат', () => { S.logged = true; tab('home'); go('import'); }],
+      ['Запчасти по VIN: поиск, поставщики, заказ', () => { S.logged = true; tab('parts'); }],
       ['Заказать услугу → отклики → оплата', () => { S.logged = true; tab('home'); go('service', { id: 'avtozvuk-shumoizolyaciya' }); }],
-      ['Статус заказа, чат, приёмка и отзыв', () => { S.logged = true; if (!S.order || S.order.st < 3) S.order = { s: 'avtozvuk-shumoizolyaciya', car: 'Kia Sorento 2023', st: 3, pro: PROS[0] }; tab('orders'); go('order'); }],
-      ['Калькулятор привоза по ссылке', () => { S.logged = true; tab('home'); go('calc'); }],
-      ['Привоз авто: этапы и документы', () => { S.logged = true; tab('home'); go('import'); }],
-      ['Каталог авто с ценами под ключ', () => { S.logged = true; tab('home'); go('cars'); }],
-      ['Запчасти по VIN: разделы, поставщики, заказ', () => { S.logged = true; tab('home'); go('parts'); }],
-      ['Гараж: авто, ОСАГО, история', () => { S.logged = true; tab('garage'); }],
+      ['Статус услуги, чат, приёмка и отзыв', () => { S.logged = true; if (!S.order || S.order.st < 3) S.order = { s: 'avtozvuk-shumoizolyaciya', car: 'Kia Sorento 2023', st: 3, pro: PROS[0] }; tab('orders'); go('order'); }],
+      ['Гараж: авто, ОСАГО, история', () => { S.logged = true; tab('profile'); go('garage'); }],
     ],
     pro: [
       ['Лента заказов рядом', () => tab('feed')],
@@ -805,7 +915,8 @@
       ['Выплаты и удержание', () => tab('payouts')],
     ],
     admin: [
-      ['Сводка: заказы, отклики, комиссия', () => tab('dash')],
+      ['Сводка: привоз, запчасти, услуги', () => tab('dash')],
+      ['Заявки на привоз: расчёт → подтверждение', () => tab('aleads')],
       ['Проверка исполнителей', () => tab('vetting')],
       ['Все заказы', () => tab('aorders')],
       ['Разбор спора', () => tab('disputes')],

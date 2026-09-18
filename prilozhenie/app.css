@@ -177,3 +177,13 @@ textarea.inp{resize:none;min-height:86px}
   .tabs{padding-bottom:max(12px,env(safe-area-inset-bottom))}
   .fab{display:grid}
 }
+
+/* главная: два главных направления — привоз и запчасти */
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0 10px}
+.dtile{position:relative;height:150px;border-radius:16px;overflow:hidden;text-align:left;border:1px solid var(--line)}
+.dtile img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.dtile::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,9,8,0) 25%,rgba(10,9,8,.95))}
+.dtile>div{position:absolute;left:0;right:0;bottom:0;z-index:1;padding:10px 12px}
+.dtile b{display:block;font:600 21px/1.05 var(--ff-h);color:var(--gold-lt)}
+.dtile span{display:block;font-size:11.5px;line-height:1.3;color:var(--text);opacity:.85;margin-top:3px}
+.top .ib+.ib{margin-left:-2px}
