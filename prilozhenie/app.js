@@ -144,6 +144,7 @@
         <div class="prog" style="width:220px"><i style="width:43%"></i></div>
         <span class="sm mut">Этап 4 из 7 · морем во Владивосток</span></div></button>
       <button class="card tap gl" data-go="calc" style="margin-top:10px"><div class="row"><span class="gold">${ic('ship')}</span><div class="sp"><b class="sm">Рассчитать авто по ссылке</b><div class="xs mut">Encar, Che168, Dongchedi → цена под ключ</div></div><span class="gold">›</span></div></button>
+      <div class="btns"><button class="btn gh" data-go="cars">${ic('car')} Каталог авто</button><button class="btn gh" data-go="parts">${ic('parts')} Запчасти</button></div>
       ${o && o.st < 6 ? `<h3>Активный заказ</h3><button class="card tap gl" data-go="order">
         <div class="row"><b style="flex:1">${esc(svc(o.s).n)}</b>${statusPill(o.st)}</div>
         <div class="sm mut" style="margin-top:4px">${esc(o.car)}${o.pro ? ' · ' + esc(o.pro.n) : ''}</div></button>` : ''}
@@ -295,6 +296,7 @@
     return {
       title: 'Мои заказы',
       body: `${o ? `<h3>Текущие</h3><button class="card tap gl" data-go="order"><div class="row"><b class="sp">${esc(svc(o.s).n)}</b>${statusPill(o.st)}</div><div class="sm mut" style="margin-top:4px">${esc(o.car)}</div></button>` : `<div class="card"><p class="sm mut">Активных заказов нет. Выберите услугу на главной — исполнители откликнутся с ценой.</p><button class="btn" data-go="newOrder" data-p="avtozvuk-shumoizolyaciya">Создать заказ</button></div>`}
+      ${S.partsOrder ? `<button class="card tap gl" data-go="partsOrder"><div class="row"><span class="gold">${ic('parts')}</span><b class="sp">Запчасти · ${S.partsOrder.n}</b><span class="pill g">${PST[S.partsOrder.st]}</span></div></button>` : ''}
       <button class="card tap" data-go="import"><div class="row"><span class="gold">${ic('ship')}</span><b class="sp">Привоз Kia Sorento</b><span class="pill g">этап 4 из 7</span></div></button>
       <h3>Завершённые</h3>
       ${[['Техосмотр', 'Toyota Camry', '21.11.2025'], ['Замена лобового стекла', 'Toyota Camry', '14.06.2025'], ['ОСАГО', 'Kia Sorento', '12.03.2026']].map(([t, c, d]) => `<div class="card"><div class="row"><b class="sp sm">${t}</b><span class="xs mut">${d}</span></div><div class="xs mut">${c}</div></div>`).join('')}`,
@@ -326,6 +328,7 @@
       <label class="field"><span>Кредит</span><div class="chips"><button class="chip on" data-chip>Не нужен</button><button class="chip" data-chip>Нужен</button></div></label>
       <button class="btn" data-act="importLead">Получить подбор от менеджера</button>
       <button class="btn gh" data-go="calc">Уже нашли машину? Рассчитать по ссылке</button>
+      <button class="btn gh" data-go="cars">Смотреть каталог с ценами под ключ</button>
       <p class="xs mut center" style="margin-top:8px">Менеджер пришлёт 2–3 варианта с ценой под ключ</p>`,
   });
 
@@ -460,24 +463,114 @@
     };
   };
 
+  // ── Каталог автомобилей (демо-выгрузка площадок) ─────
+  const CATALOG = [
+    ['encar', 'Kia Sportage 2.0', 2023, 'u3', 1999, 150, '21 400', 26500000, 'offer-crossover-grey'],
+    ['encar', 'Hyundai Tucson 2.0', 2022, 'u3', 1999, 156, '34 800', 24900000, 'offer-crossover-dark'],
+    ['encar', 'Kia Sorento 2.5', 2021, '35', 2497, 180, '52 000', 29800000, 'offer-suv-white'],
+    ['encar', 'Genesis GV70 2.5T', 2021, '35', 2497, 304, '41 300', 38500000, 'offer-suv-black'],
+    ['encar', 'Hyundai Santa Fe 2.2D', 2020, '35', 2199, 199, '68 900', 25400000, 'offer-suv-white'],
+    ['encar', 'Kia K5 2.0', 2022, 'u3', 1999, 160, '29 100', 21300000, 'offer-crossover-grey'],
+    ['che168', 'Haval Jolion 1.5T', 2024, 'u3', 1497, 150, '8 900', 92000, 'offer-crossover-dark'],
+    ['che168', 'Geely Coolray 1.5T', 2023, 'u3', 1477, 150, '17 500', 78000, 'offer-crossover-grey'],
+    ['che168', 'Changan CS55 Plus 1.5T', 2023, 'u3', 1494, 160, '22 000', 81000, 'offer-suv-black'],
+    ['dongchedi', 'Chery Tiggo 7 Pro 1.5T', 2021, '35', 1498, 147, '46 000', 68000, 'offer-suv-black'],
+    ['dongchedi', 'Toyota RAV4 2.0', 2021, '35', 1987, 171, '58 000', 139000, 'offer-suv-white'],
+    ['dongchedi', 'Honda CR-V 1.5T', 2022, 'u3', 1498, 193, '31 500', 152000, 'offer-crossover-dark'],
+  ].map(([src, t, y, age, cc, hp, km, price, im], i) => {
+    const l = LISTINGS[src];
+    return { id: i, src: l.src, country: l.country, cur: l.cur, t, y, age, cc, hp, km: km + ' км', price, img: im, fuel: 'бензин' };
+  });
+  S.catF = { c: 'all', b: 'all' };
+  V.cars = () => {
+    const f = S.catF;
+    const list = CATALOG.map((c) => ({ c, r: calc(c) }))
+      .filter(({ c }) => f.c === 'all' || c.country === f.c)
+      .filter(({ r }) => f.b === 'all' || (f.b === '3' ? r.total <= 3e6 : f.b === '4' ? r.total > 3e6 && r.total <= 4e6 : r.total > 4e6))
+      .sort((a, b) => a.r.total - b.r.total);
+    const ch = (k, v, t) => `<button class="chip${f[k] === v ? ' on' : ''}" data-act="catF" data-p="${k}:${v}">${t}</button>`;
+    return {
+      title: 'Авто из-за рубежа', back: true,
+      body: `<div class="chips" style="margin-bottom:8px">${ch('c', 'all', 'Все')}${ch('c', 'Корея', 'Корея')}${ch('c', 'Китай', 'Китай')}</div>
+      <div class="chips" style="margin-bottom:12px">${ch('b', 'all', 'Любой бюджет')}${ch('b', '3', 'до 3 млн')}${ch('b', '4', '3–4 млн')}${ch('b', '5', '4+ млн')}</div>
+      <p class="xs mut" style="margin-bottom:8px">${list.length} из 12 480 · обновлено сегодня в 06:00 · цены под ключ в Москве</p>
+      ${list.map(({ c, r }) => `<button class="card tap" data-act="catOpen" data-p="${c.id}" style="padding:0;overflow:hidden;display:flex">
+        <img src="${img(c.img)}" alt="" loading="lazy" style="width:118px;height:auto;object-fit:cover;flex:none">
+        <div style="padding:10px 12px;min-width:0"><b class="sm">${esc(c.t)} ${c.y}</b>
+        <div class="xs mut">${c.km} · ${c.hp} л.с. · ${c.src}</div>
+        <div class="price gold" style="margin-top:6px">≈ ${num(r.total)} ₽</div>
+        <div class="xs mut">${r.util === null ? 'без утильсбора · ' : ''}в объявлении ${num(c.price)} ${CUR[c.cur]}</div></div></button>`).join('') || '<p class="mut">Под фильтр ничего не нашлось</p>'}
+      <p class="xs mut">В рабочей версии каталог обновляется с площадок по расписанию, проданные машины снимаются автоматически.</p>`,
+    };
+  };
+
+  // ── Запчасти: разделы → деталь → предложения поставщиков ─
+  const NODES = [['to', 'ТО и фильтры', 'cat-filtry'], ['brake', 'Тормоза', 'cat-tormoznaya-sistema'], ['susp', 'Подвеска', 'cat-podveska'], ['el', 'Электрика', 'cat-elektrika'], ['body', 'Кузов', 'cat-kuzov'], ['oil', 'Масла', 'cat-masla']];
+  const OFFER = (b, a, kind, p, stock, sup) => ({ b, a, kind, p, stock, sup });
+  const ITEMS = {
+    brake: [
+      { t: 'Колодки тормозные передние', img: 'cat-tormoznaya-sistema', o: [OFFER('Hyundai/Kia', '58101P2A00', 'оригинал', 9870, '1–2 дня', 'Поставщик'), OFFER('Brembo', 'P 30 055', 'аналог', 6420, 'сегодня', 'Склад в Москве'), OFFER('Sangsin', 'SP1848', 'аналог', 3950, 'сегодня', 'Склад в Москве')] },
+      { t: 'Диск тормозной передний', img: 'cat-tormoznaya-sistema', o: [OFFER('Hyundai/Kia', '51712P2000', 'оригинал', 11200, '1–2 дня', 'Поставщик'), OFFER('TRW', 'DF6981S', 'аналог', 6150, 'сегодня', 'Склад в Москве')] },
+      { t: 'Колодки тормозные задние', img: 'cat-tormoznaya-sistema', o: [OFFER('Hyundai/Kia', '58302P2A00', 'оригинал', 7340, '7–10 дней', 'Под заказ'), OFFER('Brembo', 'P 30 104', 'аналог', 4880, '1–2 дня', 'Поставщик')] },
+    ],
+    to: [
+      { t: 'Фильтр масляный', img: 'cat-filtry', o: [OFFER('Hyundai/Kia', '263002J000', 'оригинал', 1150, 'сегодня', 'Склад в Москве'), OFFER('MANN-FILTER', 'W 811/80', 'аналог', 890, 'сегодня', 'Склад в Москве')] },
+      { t: 'Фильтр воздушный', img: 'cat-filtry', o: [OFFER('Hyundai/Kia', '28113P2100', 'оригинал', 2480, '1–2 дня', 'Поставщик'), OFFER('MAHLE', 'LX 4521', 'аналог', 1390, 'сегодня', 'Склад в Москве')] },
+      { t: 'Фильтр салона', img: 'cat-filtry', o: [OFFER('Hyundai/Kia', '97133P2000', 'оригинал', 1960, '1–2 дня', 'Поставщик'), OFFER('Bosch', '1 987 435 612', 'аналог', 1120, 'сегодня', 'Склад в Москве')] },
+    ],
+  };
+  S.parts = { node: 'brake', items: [] };
   V.parts = () => ({
     title: 'Запчасти', back: true,
-    right: `<button class="ib" data-go="cart">${ic('cart')}${S.cart ? '<span class="dot"></span>' : ''}</button>`,
-    body: `<div class="search" style="color:var(--text)">${ic('search')}колодки передние</div>
-      <div class="chips" style="margin:10px 0 14px">${CARS.map((c, i) => `<button class="chip${i === 0 ? ' on' : ''}" data-chip>${c.t}</button>`).join('')}</div>
-      <p class="xs mut" style="margin-bottom:8px">Подобрано по VIN Kia Sorento · ${PARTS.length} позиции</p>
-      ${PARTS.map((x, i) => `<div class="card row"><img src="${img(x.img)}" alt="" style="width:64px;height:64px;border-radius:10px;object-fit:cover"><div class="sp">
-        <b class="sm">${x.t}</b><div class="xs mut">${x.b} · ${x.a}</div><div class="row" style="margin-top:4px"><span class="price">${rub(x.p)}</span><span class="xs ${x.d === 'сегодня' ? 'ok' : 'mut'}">${x.d}</span></div></div>
-        <button class="btn sm" data-act="addCart" data-p="${i}">+</button></div>`).join('')}
+    right: `<button class="ib" data-go="cart">${ic('cart')}${S.parts.items.length ? '<span class="dot"></span>' : ''}</button>`,
+    body: `<div class="card gl"><div class="row"><span class="gold">${ic('car')}</span><div class="sp"><b class="sm">Kia Sorento 2023</b><div class="xs mut">VIN KNARH81E••••••4821 · из гаража</div></div><button class="btn sm gh">Сменить</button></div></div>
+      <div class="search">${ic('search')}Деталь, артикул или VIN</div>
+      <h3>Разделы</h3>
+      <div class="grid">${NODES.map(([k, t, im]) => `<button class="tile" data-act="partsNode" data-p="${k}" style="${S.parts.node === k ? 'border-color:var(--gold)' : ''}"><img src="${img(im)}" alt="" loading="lazy"><span>${t}</span></button>`).join('')}</div>
+      <h3>${NODES.find((n) => n[0] === S.parts.node)[1]}</h3>
+      ${(ITEMS[S.parts.node] || []).map((x, i) => {
+        const min = Math.min(...x.o.map((o) => o.p)); const today = x.o.some((o) => o.stock === 'сегодня');
+        return `<button class="card tap row" data-go="partItem" data-p="${S.parts.node}:${i}"><img src="${img(x.img)}" alt="" style="width:56px;height:56px;border-radius:10px;object-fit:cover"><div class="sp"><b class="sm">${x.t}</b>
+          <div class="xs mut">${x.o.length} предложения · от <b class="gold">${rub(min)}</b>${today ? ' · <span class="ok">есть сегодня</span>' : ''}</div></div><span class="gold">›</span></button>`;
+      }).join('') || '<div class="card"><p class="sm mut">В прототипе детали заполнены для разделов «Тормоза» и «ТО и фильтры». В рабочей версии список строится по VIN из каталога поставщика.</p></div>'}
       <div class="card"><div class="row"><span class="gold">${ic('parts')}</span><span class="sm sp">Установка у проверенного мастера — одним заказом с запчастью</span></div></div>`,
   });
 
-  V.cart = () => ({
-    title: 'Корзина', back: true,
-    body: S.cart ? `<div class="card"><div class="kv"><span>Позиций</span><b>${S.cart}</b></div><div class="kv"><span>Получение</span><b>Щёлковское ш., 77 или доставка</b></div></div>
-      <label class="field"><span>Установить?</span><div class="chips"><button class="chip on" data-chip>Да, найти мастера</button><button class="chip" data-chip>Только запчасти</button></div></label>
-      <button class="btn" data-act="buy">Заказать в 1 клик</button>` : '<p class="mut">Корзина пуста</p>',
-  });
+  V.partItem = (p) => {
+    const [n, i] = p.split(':'); const x = ITEMS[n][+i];
+    return {
+      title: x.t, back: true,
+      body: `<p class="sm mut" style="margin-bottom:10px">Подходит к Kia Sorento 2023 по VIN · предложения от склада и поставщиков</p>
+      ${x.o.map((o, j) => `<div class="card"><div class="row"><b class="sp">${o.b}</b><span class="pill ${o.kind === 'оригинал' ? 'g' : ''}">${o.kind}</span></div>
+        <div class="xs mut" style="margin:3px 0 8px">${o.a} · ${o.sup}</div>
+        <div class="row"><span class="price sp">${rub(o.p)}</span><span class="xs ${o.stock === 'сегодня' ? 'ok' : 'mut'}">${o.stock === 'сегодня' ? 'в наличии сегодня' : o.stock}</span>
+        <button class="btn sm" data-act="partAdd" data-p="${n}:${i}:${j}">В корзину</button></div></div>`).join('')}
+      <p class="xs mut">Наличие и цены в рабочей версии приходят из API поставщика в момент открытия; перед оплатой менеджер подтверждает заказ.</p>`,
+    };
+  };
+
+  V.cart = () => {
+    const it = S.parts.items; const sum = it.reduce((s, x) => s + x.p, 0);
+    return {
+      title: 'Корзина', back: true,
+      body: it.length ? `${it.map((x, k) => `<div class="card row"><div class="sp"><b class="sm">${x.t}</b><div class="xs mut">${x.b} · ${x.a} · ${x.stock}</div></div><b>${rub(x.p)}</b><button class="ib" data-act="partDel" data-p="${k}" aria-label="Убрать">×</button></div>`).join('')}
+      <div class="card"><div class="kv"><span>Итого</span><b class="gold">${rub(sum)}</b></div></div>
+      <div class="field"><span>Получение</span><div class="chips"><button class="chip on" data-chip>Самовывоз: Щёлковское ш., 77</button><button class="chip" data-chip>Доставка</button></div></div>
+      <div class="field"><span>Установка</span><div class="chips"><button class="chip on" data-chip>Найти мастера</button><button class="chip" data-chip>Только запчасти</button></div></div>
+      <button class="btn" data-act="buy">Заказать в 1 клик</button>` : '<p class="mut">Корзина пуста</p><button class="btn gh" data-act="back">К запчастям</button>',
+    };
+  };
+
+  const PST = ['Заказ принят', 'Наличие подтверждено', 'Едет к нам', 'Готово к выдаче'];
+  V.partsOrder = () => {
+    const o = S.partsOrder;
+    return {
+      title: 'Заказ ' + o.n, back: true,
+      body: `<div class="card gl">${o.items.map((x) => `<div class="kv"><span>${x.t} · ${x.b}</span><b>${rub(x.p)}</b></div>`).join('')}</div>
+      <ol class="tl">${PST.map((t, i) => `<li class="${i < o.st ? 'd' : i === o.st ? 'c' : ''}"><i></i><b>${t}</b><span class="xs mut">${['только что', 'менеджер сверил по VIN', 'ожидаем 20.09', 'Щёлковское ш., 77, стр. 1'][i]}</span></li>`).join('')}</ol>
+      ${o.st < 3 ? '<button class="btn gh" data-act="partsNext">Демо: следующий статус</button>' : '<div class="card"><span class="sm">Детали на складе. Мастер по установке получил заказ и свяжется с вами.</span></div>'}`,
+    };
+  };
 
   V.chats = () => ({
     title: 'Чаты',
@@ -654,7 +747,13 @@
     },
     importLead() { toast('Заявка отправлена менеджеру. Расчёт придёт в чат'); },
     addCart() { S.cart++; render(); toast('Добавлено в корзину'); },
-    buy() { S.cart = 0; back(); toast('Заказ принят. Менеджер подтвердит наличие'); },
+    buy() { S.partsOrder = { n: 'KC-2609-0152', items: S.parts.items.slice(), st: 0 }; S.parts.items = []; const k = S.role + ':' + curTab(); S.stacks[k] = [{ s: curTab(), p: {} }, { s: 'partsOrder', p: {} }]; render(); toast('Заказ принят. Менеджер подтвердит наличие'); },
+    partsNode(k) { S.parts.node = k; render(); },
+    partAdd(p) { const [n, i, j] = p.split(':'); const x = ITEMS[n][+i]; S.parts.items.push({ t: x.t, ...x.o[+j] }); toast('Добавлено в корзину'); },
+    partDel(k) { S.parts.items.splice(+k, 1); render(); },
+    partsNext() { S.partsOrder.st = Math.min(S.partsOrder.st + 1, 3); render(); },
+    catF(p) { const [k, v] = p.split(':'); S.catF[k] = v; render(); },
+    catOpen(id) { S.calc.car = CATALOG[+id]; go('calcResult'); },
     notif() { S.notif = !S.notif; render(); },
     bid(id) { S.bid[id] = true; render(); toast('Отклик отправлен клиенту'); },
     jobNext() { S.jobStep = Math.min(S.jobStep + 1, 4); render(); },
@@ -695,7 +794,8 @@
       ['Статус заказа, чат, приёмка и отзыв', () => { S.logged = true; if (!S.order || S.order.st < 3) S.order = { s: 'avtozvuk-shumoizolyaciya', car: 'Kia Sorento 2023', st: 3, pro: PROS[0] }; tab('orders'); go('order'); }],
       ['Калькулятор привоза по ссылке', () => { S.logged = true; tab('home'); go('calc'); }],
       ['Привоз авто: этапы и документы', () => { S.logged = true; tab('home'); go('import'); }],
-      ['Запчасти по VIN и корзина', () => { S.logged = true; tab('home'); go('parts'); }],
+      ['Каталог авто с ценами под ключ', () => { S.logged = true; tab('home'); go('cars'); }],
+      ['Запчасти по VIN: разделы, поставщики, заказ', () => { S.logged = true; tab('home'); go('parts'); }],
       ['Гараж: авто, ОСАГО, история', () => { S.logged = true; tab('garage'); }],
     ],
     pro: [
