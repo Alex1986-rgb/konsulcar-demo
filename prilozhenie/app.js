@@ -357,6 +357,7 @@
     dongchedi: { src: 'Dongchedi', country: 'Китай', cur: 'CNY', url: 'www.dongchedi.com/usedcar/17840321', t: 'Chery Tiggo 7 Pro 1.5T', y: 2021, age: '35', cc: 1498, hp: 147, km: '46 000 км', price: 68000, img: 'offer-suv-black', fuel: 'бензин' },
   };
   const CUR = { KRW: '₩', CNY: '¥' };
+  const mln = (n) => (n / 1e6).toFixed(2).replace('.', ',');
   const num = (n) => Math.round(n).toLocaleString('ru-RU').replace(/,/g, ' ');
   // Пошлина для физлица по единым ставкам (ЕТС): до 3 лет — % от цены, но не меньше €/см³; старше — €/см³.
   function duty(eur, cc, age) {
@@ -368,14 +369,14 @@
     const i = [1000, 1500, 1800, 2300, 3000, Infinity].findIndex((v) => cc <= v);
     return cc * t[i];
   }
-  const clearFee = (rub) => [[200000, 1067], [450000, 2134], [1200000, 4269], [2700000, 11746], [4200000, 16524], [5500000, 21344], [7000000, 27540], [Infinity, 30000]].find((x) => rub <= x[0])[1];
+  const clearFee = (rub) => [[200000, 1231], [450000, 2462], [1200000, 4924], [2700000, 13541], [4200000, 18465], [5500000, 21344], [10000000, 49240], [Infinity, 73860]].find((x) => rub <= x[0])[1];
   function calc(c, ent) {
     const ul = ent === 'ul';
     const fx = RATES.fx[c.cur] * (1 + RATES.fxMarkup / 100);
     const car = c.price * fx;
     const eur = car / RATES.fx.EUR;
     const d = ul ? null : duty(eur, c.cc, c.age) * RATES.fx.EUR;
-    const util = ul || c.hp > 160 ? null : (c.age === 'u3' ? 3400 : 5200);
+    const util = ul || c.hp > 160 || c.cc > 3000 ? null : (c.age === 'u3' ? 3400 : 5200);
     const cf = clearFee(car);
     const groups = [
       ['Автомобиль', [[`Цена в объявлении: ${num(c.price)} ${CUR[c.cur]} × ${fx.toFixed(c.cur === 'KRW' ? 4 : 2)} ₽`, car]]],
@@ -416,13 +417,13 @@
     return {
       title: 'Расчёт', back: true,
       body: `<div class="card" style="padding:0;overflow:hidden">${c.img ? `<img src="${img(c.img)}" alt="" style="width:100%;height:140px;object-fit:cover">` : ''}<div style="padding:12px 14px">
-        <div class="row"><b class="sp">${esc(c.t)}${c.y ? ' ' + c.y : ''}</b>${c.src ? `<span class="pill ok">✓ объявление активно</span>` : ''}</div>
+        <div class="row"><b class="sp">${esc(c.t)}${c.y ? ' ' + c.y : ''}</b>${c.src ? `<span class="pill">данные объявления</span>` : ''}</div>
         <div class="xs mut" style="margin-top:4px">${[c.src && c.src + ' · ' + c.country, c.cc + ' см³', c.hp + ' л.с.', c.km, c.fuel].filter(Boolean).join(' · ')}</div></div></div>
-      <div class="card gl"><span class="sm mut">Цена под ключ в Москве</span><div class="big gold" style="margin:6px 0 4px">≈ ${num(r.total)} ₽</div>
-        <span class="xs mut">предварительно · ${r.ul ? 'без таможенных платежей' : r.util === null ? 'без утильсбора' : 'расчёт действует 24 часа'}</span>
+      <div class="card gl"><span class="sm mut">Цена под ключ в Москве</span><div class="big gold" style="margin:6px 0 4px">${r.util === null && !r.ul ? 'от ' + num(r.total) + ' ₽' : mln(r.total * 0.97) + '–' + mln(r.total * 1.03) + ' млн ₽'}</div>
+        <span class="xs mut">предварительно · ${r.ul ? 'без таможенных платежей' : r.util === null ? 'без утильсбора — он добавится' : 'вилка ±3 % · не является публичной офертой'}</span>
         <div class="chips" style="margin-top:10px">${ent('fl', 'Покупаю на себя')}${ent('ul', 'На компанию')}</div></div>
       ${r.groups.map(([g, rows]) => `<h3>${g}</h3><div class="card">${rows.map(([t, v]) => `<div class="kv"><span>${t}</span><b>${v === null ? '<span class="mut">посчитает менеджер</span>' : num(v) + ' ₽'}</b></div>`).join('')}</div>`).join('')}
-      ${r.ul ? '<p class="xs mut">Для компании таможня считается иначе: пошлина, акциз и НДС 20 % (его можно принять к вычету). Менеджер пришлёт полный расчёт.</p>' : r.util === null ? '<p class="xs mut">Свыше 160 л.с. утильсбор считается по отдельной шкале — менеджер добавит его в итог.</p>' : ''}
+      ${r.ul ? '<p class="xs mut">Для компании таможня считается иначе: пошлина, акциз и НДС 20 % (его можно принять к вычету). Менеджер пришлёт полный расчёт.</p>' : r.util === null ? '<div class="card" style="border-color:rgba(217,139,58,.5)"><b class="sm" style="color:var(--warn)">⚠ Свыше 160 л.с. или 3 л — коммерческий утильсбор</b><p class="sm mut" style="margin-top:4px">В 2026 году это от 900 000 ₽ и выше вместо 3 400 ₽. Менеджер добавит точную сумму и подскажет версии этой модели до 160 л.с.</p></div>' : ''}
       <p class="xs mut" style="margin-top:6px">Курсы ₩ и ¥ — по ЦБ с надбавкой ${RATES.fxMarkup} %. Ставки в прототипе условные: в рабочей версии их ведёт менеджер, а формула сверяется с калькулятором ТКС.</p>
       <button class="btn" data-act="calcOrder">Заказать этот автомобиль</button>
       <button class="btn gh" data-go="calcManual">Изменить параметры</button>`,
@@ -509,7 +510,7 @@
     return {
       title: l.n, back: true,
       body: `<div class="card gl"><b>${esc(l.t)}</b><div class="xs mut" style="margin-top:4px">${esc(l.who)}</div><div class="xs mut">${esc(l.src)}</div>
-        ${l.car && l.car.src ? '<div class="pill ok" style="margin-top:8px">✓ объявление активно · проверено 2 мин назад</div>' : ''}</div>
+        ${l.car && l.car.src ? '<div class="pill ok" style="margin-top:8px">✓ автопроверка при заявке: объявление активно</div>' : ''}</div>
       ${r ? `<div class="card">${calcRows(r, '<span class="mut">вручную</span>')}<div class="kv"><span>Итого по калькулятору</span><b class="gold">${r.ul ? '—' : num(r.total) + ' ₽'}</b></div></div>` : `<div class="card"><div class="kv"><span>Предварительно</span><b>${l.total ? num(l.total) + ' ₽' : '—'}</b></div></div>`}
       ${l.st === 0 ? `<label class="field"><span>Итоговая цена для клиента, ₽</span><input class="inp" id="finalPrice" inputmode="numeric" value="${l.total ? Math.round(l.total / 1000) * 1000 : ''}"></label>
         <button class="btn" data-act="leadConfirm" data-p="${l.n}">Подтвердить клиенту</button>
@@ -573,8 +574,8 @@
         <img src="${img(c.img)}" alt="" loading="lazy" style="width:118px;height:auto;object-fit:cover;flex:none">
         <div style="padding:10px 12px;min-width:0"><b class="sm">${esc(c.t)} ${c.y}</b>
         <div class="xs mut">${c.km} · ${c.hp} л.с. · ${c.src}</div>
-        <div class="price gold" style="margin-top:6px">≈ ${num(r.total)} ₽</div>
-        <div class="xs mut">${r.util === null ? 'без утильсбора · ' : ''}в объявлении ${num(c.price)} ${CUR[c.cur]}</div></div></button>`).join('') || '<p class="mut">Под фильтр ничего не нашлось</p>'}
+        <div class="price gold" style="margin-top:6px">${r.util === null ? 'от ' : '≈ '}${num(r.total)} ₽</div>
+        ${r.util === null ? '<div class="xs" style="color:var(--warn)">⚠ >160 л.с.: + коммерческий утильсбор</div>' : ''}<div class="xs mut">в объявлении ${num(c.price)} ${CUR[c.cur]}</div></div></button>`).join('') || '<p class="mut">Под фильтр ничего не нашлось</p>'}
       <p class="xs mut">В рабочей версии каталог обновляется с площадок по расписанию, проданные машины снимаются автоматически.</p>`,
     };
   };
@@ -608,7 +609,7 @@
         const min = Math.min(...x.o.map((o) => o.p)); const today = x.o.some((o) => o.stock === 'сегодня');
         return `<button class="card tap row" data-go="partItem" data-p="${S.parts.node}:${i}"><img src="${img(x.img)}" alt="" style="width:56px;height:56px;border-radius:10px;object-fit:cover"><div class="sp"><b class="sm">${x.t}</b>
           <div class="xs mut">${x.o.length} предложения · от <b class="gold">${rub(min)}</b>${today ? ' · <span class="ok">есть сегодня</span>' : ''}</div></div><span class="gold">›</span></button>`;
-      }).join('') || '<div class="card"><p class="sm mut">В прототипе детали заполнены для разделов «Тормоза» и «ТО и фильтры». В рабочей версии список строится по VIN из каталога поставщика.</p></div>'}
+      }).join('') || '<div class="card"><p class="sm mut">В прототипе детали заполнены для разделов «Тормоза» и «ТО и фильтры». В рабочей версии — поиск по артикулу у поставщика и подбор по VIN менеджером или через VIN-каталог.</p></div>'}
       <div class="card"><div class="row"><span class="gold">${ic('parts')}</span><span class="sm sp">Установка у проверенного мастера — одним заказом с запчастью</span></div></div>`,
   });
 
@@ -625,12 +626,12 @@
     const [n, i] = p.split(':'); const x = ITEMS[n][+i];
     return {
       title: x.t, back: true,
-      body: `<p class="sm mut" style="margin-bottom:10px">Подходит к ${CARS[S.parts.car].t} ${CARS[S.parts.car].y} по VIN · предложения от склада и поставщиков</p>
+      body: `<p class="sm mut" style="margin-bottom:10px">Для ${CARS[S.parts.car].t} ${CARS[S.parts.car].y} · предложения от склада и поставщиков</p>
       ${x.o.map((o, j) => `<div class="card"><div class="row"><b class="sp">${o.b}</b><span class="pill ${o.kind === 'оригинал' ? 'g' : ''}">${o.kind}</span></div>
         <div class="xs mut" style="margin:3px 0 8px">${o.a} · ${o.sup}</div>
         <div class="row"><span class="price sp">${rub(o.p)}</span><span class="xs ${o.stock === 'сегодня' ? 'ok' : 'mut'}">${o.stock === 'сегодня' ? 'в наличии сегодня' : o.stock}</span>
         <button class="btn sm" data-act="partAdd" data-p="${n}:${i}:${j}">В корзину</button></div></div>`).join('')}
-      <p class="xs mut">Наличие и цены в рабочей версии приходят из API поставщика в момент открытия; перед оплатой менеджер подтверждает заказ.</p>`,
+      <p class="xs mut">Цены и остатки в рабочей версии приходят из API поставщика. Совместимость по VIN подтверждает менеджер или подключаемый VIN-каталог.</p>`,
     };
   };
 
@@ -870,7 +871,7 @@
     const g = (id) => { const e = document.getElementById(id); return e ? e.value.replace(/\s/g, '') : null; };
     const m = S.calc.manual; if (g('mPrice') !== null) { m.price = g('mPrice'); m.cc = g('mCc'); m.hp = g('mHp'); }
   }
-  V.calcWait = () => ({ title: 'Считаем', back: true, body: `<div class="spin"></div><p class="center">Читаем объявление ${esc(S.calc.car.src)}</p><p class="center sm mut" style="margin-top:6px">цена, год, объём, мощность · проверяем, что машина ещё продаётся</p>` });
+  V.calcWait = () => ({ title: 'Считаем', back: true, body: `<div class="spin"></div><p class="center">Читаем объявление ${esc(S.calc.car.src)}</p><p class="center sm mut" style="margin-top:6px">цена, год, объём, мощность · итоговую цену и наличие подтвердит менеджер</p>` });
 
   $app.addEventListener('click', (e) => {
     const el = e.target.closest('[data-go],[data-act],[data-tab],[data-chip],[data-role]');
